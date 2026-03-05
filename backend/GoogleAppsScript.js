@@ -1,12 +1,12 @@
 /**
- * GOOGLE APPS SCRIPT CODE (MULTI-SHEET BY EVENT)
+ * GOOGLE APPS SCRIPT CODE (SINGLE MASTER SHEET)
  *
- * Each event writes to its own Google Spreadsheet.
+ * All events write to the SAME Google Spreadsheet.
  *
  * Setup:
- * 1. Create one Google Sheet per event with headers in row 1:
+ * 1. Create ONE Google Sheet with headers in row 1:
  *    Timestamp, Full Name, Email, Phone, College, Department, Year, Event, Event ID, Registration ID, Payment ID
- * 2. Paste each spreadsheet ID in EVENT_SHEET_MAP.
+ * 2. Paste the spreadsheet ID in MASTER_SPREADSHEET_ID.
  * 3. Deploy as Web App (Execute as: Me, Access: Anyone).
  * 4. Use deployed URL as GOOGLE_SCRIPT_URL in frontend constants.ts.
  */
@@ -29,11 +29,8 @@ const ADMIN_ALLOWED_EMAILS = [
   'vishal.ishwar.ponaji@gmail.com'
 ];
 
-const EVENT_SHEET_MAP = {
-  e1: { spreadsheetId: '1VnBiox2fD8hO3M4cQH90TozkEEHNAk8Z_AHVcxCe7w8', sheetName: DEFAULT_SHEET_NAME },
-  e2: { spreadsheetId: '1CLTK4aMGGdGzaXg9qk_WwJa5-W0s92r_XUPx4BVsIsA', sheetName: DEFAULT_SHEET_NAME },
-  e3: { spreadsheetId: '1DPwxrchkyrDlytQouSlsihyHS1uCDOIF2-XLCnQ6x1M', sheetName: DEFAULT_SHEET_NAME }
-};
+// Replace this with your single master Google Sheet ID
+const MASTER_SPREADSHEET_ID = '1VnBiox2fD8hO3M4cQH90TozkEEHNAk8Z_AHVcxCe7w8';
 
 const EVENT_ID_TO_TITLE = {
   e1: 'Netrtva Tantra (Best Manager)',
@@ -72,24 +69,13 @@ function doGet(e) {
         }
       }
 
+      const sheet = getSheet_(MASTER_SPREADSHEET_ID, DEFAULT_SHEET_NAME);
+      const lastRow = sheet.getLastRow();
       const allRows = [];
-      const eventIds = Object.keys(EVENT_SHEET_MAP);
 
-      eventIds.forEach(function (eventId) {
-        const config = EVENT_SHEET_MAP[eventId];
-        if (!config || !isSpreadsheetConfigured_(config.spreadsheetId)) {
-          return;
-        }
-
-        const sheet = getSheet_(config.spreadsheetId, config.sheetName || DEFAULT_SHEET_NAME);
-        const lastRow = sheet.getLastRow();
-        if (lastRow < 2) {
-          return;
-        }
-
+      if (lastRow >= 2) {
         const rows = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
         rows.forEach(function (row) {
-          const eventTitle = normalizeString_(row[7]) || EVENT_ID_TO_TITLE[eventId] || eventId;
           allRows.push({
             timestamp: formatTimestamp_(row[0]),
             fullName: normalizeString_(row[1]),
@@ -98,14 +84,14 @@ function doGet(e) {
             college: normalizeString_(row[4]),
             department: normalizeString_(row[5]),
             year: normalizeString_(row[6]),
-            eventTitle: eventTitle,
-            eventId: normalizeString_(row[8]) || eventId,
-            eventDate: EVENT_ID_TO_DATE[eventId] || EVENT_DATE_LABEL,
+            eventTitle: normalizeString_(row[7]),
+            eventId: normalizeString_(row[8]),
+            eventDate: EVENT_ID_TO_DATE[normalizeString_(row[8])] || EVENT_DATE_LABEL,
             registrationId: normalizeString_(row[9]),
             razorpayPaymentId: normalizeString_(row[10])
           });
         });
-      });
+      }
 
       allRows.sort(function (a, b) {
         return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
@@ -145,33 +131,24 @@ function doGet(e) {
       }
     }
 
+    const sheet = getSheet_(MASTER_SPREADSHEET_ID, DEFAULT_SHEET_NAME);
+    const lastRow = sheet.getLastRow();
     const allRegistrations = [];
-    const eventIds = Object.keys(EVENT_SHEET_MAP);
 
-    eventIds.forEach(function (eventId) {
-      const config = EVENT_SHEET_MAP[eventId];
-      if (!config || !isSpreadsheetConfigured_(config.spreadsheetId)) {
-        return;
-      }
-
-      const sheet = getSheet_(config.spreadsheetId, config.sheetName || DEFAULT_SHEET_NAME);
-      const lastRow = sheet.getLastRow();
-      if (lastRow < 2) {
-        return;
-      }
-
-      const matchingRow = getFirstMatchingRegistrationRow_(sheet, lastRow, email);
-      if (!matchingRow) {
-        return;
-      }
-
-      const rowEventTitle = normalizeString_(matchingRow[7]) || EVENT_ID_TO_TITLE[eventId] || eventId;
-      allRegistrations.push({
-        id: normalizeString_(matchingRow[8]) || eventId,
-        title: rowEventTitle,
-        date: EVENT_ID_TO_DATE[eventId] || EVENT_DATE_LABEL
+    if (lastRow >= 2) {
+      const rows = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
+      rows.forEach(function (row) {
+        if (normalizeString_(row[2]).toLowerCase() === email) {
+          allRegistrations.push({
+            id: normalizeString_(row[8]),
+            title: normalizeString_(row[7]),
+            date: EVENT_ID_TO_DATE[normalizeString_(row[8])] || EVENT_DATE_LABEL
+          });
+        }
       });
-    });
+    }
+
+    // (Registration fetching finished)
 
     const deduped = dedupeRegistrations_(allRegistrations);
     writeUserRegistrationsIndex_(email, deduped);
@@ -211,12 +188,12 @@ function doPost(e) {
     const insertedEvents = [];
     const skippedEvents = [];
 
+    const sheet = getSheet_(MASTER_SPREADSHEET_ID, DEFAULT_SHEET_NAME);
+    const lastRow = sheet.getLastRow();
+
     selectedEvents.forEach(function (eventEntry) {
       const resolved = resolveEvent_(eventEntry);
-      const sheet = getSheet_(resolved.spreadsheetId, resolved.sheetName);
-
-      const lastRow = sheet.getLastRow();
-      const alreadyRegistered = hasEmailInSheet_(sheet, lastRow, email);
+      const alreadyRegistered = hasEmailAndEventInSheet_(sheet, lastRow, email, resolved.eventId);
 
       if (alreadyRegistered) {
         skippedEvents.push(resolved.eventTitle);
@@ -321,20 +298,13 @@ function resolveEvent_(eventEntry) {
   const mappedByTitle = inputTitle ? EVENT_TITLE_TO_ID[normalizeKey_(inputTitle)] : '';
   const eventId = inputId || mappedByTitle;
 
-  if (!eventId || !EVENT_SHEET_MAP[eventId]) {
-    throw new Error('No spreadsheet configured for event: ' + (inputTitle || inputId || 'unknown'));
-  }
-
-  const config = EVENT_SHEET_MAP[eventId];
-  if (!isSpreadsheetConfigured_(config.spreadsheetId)) {
-    throw new Error('Spreadsheet ID not configured for event: ' + eventId);
+  if (!eventId || !EVENT_ID_TO_TITLE[eventId]) {
+    throw new Error('Invalid event: ' + (inputTitle || inputId || 'unknown'));
   }
 
   return {
     eventId: eventId,
-    eventTitle: inputTitle || EVENT_ID_TO_TITLE[eventId] || eventId,
-    spreadsheetId: config.spreadsheetId,
-    sheetName: config.sheetName || DEFAULT_SHEET_NAME
+    eventTitle: inputTitle || EVENT_ID_TO_TITLE[eventId] || eventId
   };
 }
 
@@ -347,12 +317,7 @@ function getSheet_(spreadsheetId, sheetName) {
   return sheet;
 }
 
-function isSpreadsheetConfigured_(spreadsheetId) {
-  if (!spreadsheetId) {
-    return false;
-  }
-  return spreadsheetId.indexOf('PASTE_SPREADSHEET_ID_FOR_') !== 0;
-}
+
 
 function isAdminAllowed_(adminEmail) {
   if (!adminEmail) {
@@ -507,72 +472,46 @@ function clearRegistrationsCaches_(email) {
   }
 }
 
-function getFirstMatchingRegistrationRow_(sheet, lastRow, email) {
-  if (lastRow < 2) {
-    return null;
-  }
+// getFirstMatchingRegistrationRow_ removed as it is legacy multi-sheet logic
 
-  const emailRange = sheet.getRange(2, 3, lastRow - 1, 1);
-  const match = emailRange
-    .createTextFinder(email)
-    .matchEntireCell(true)
-    .matchCase(false)
-    .findNext();
-
-  if (!match) {
-    return null;
-  }
-
-  return sheet.getRange(match.getRow(), 1, 1, 9).getValues()[0];
-}
-
-function hasEmailInSheet_(sheet, lastRow, email) {
+function hasEmailAndEventInSheet_(sheet, lastRow, email, eventId) {
   if (lastRow < 2) {
     return false;
   }
 
-  const emailRange = sheet.getRange(2, 3, lastRow - 1, 1);
-  const match = emailRange
-    .createTextFinder(email)
-    .matchEntireCell(true)
-    .matchCase(false)
-    .findNext();
-
-  return !!match;
+  const data = sheet.getRange(2, 3, lastRow - 1, 7).getValues(); // Email is col 3, EventId is col 9 (offset 6)
+  for (var i = 0; i < data.length; i++) {
+    if (normalizeString_(data[i][0]).toLowerCase() === email && normalizeString_(data[i][6]).toLowerCase() === eventId.toLowerCase()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function rebuildAllUserIndexes_() {
   const registrationsByEmail = {};
-  const eventIds = Object.keys(EVENT_SHEET_MAP);
+  const sheet = getSheet_(MASTER_SPREADSHEET_ID, DEFAULT_SHEET_NAME);
+  const lastRow = sheet.getLastRow();
 
-  eventIds.forEach(function (eventId) {
-    const config = EVENT_SHEET_MAP[eventId];
-    if (!config || !isSpreadsheetConfigured_(config.spreadsheetId)) {
+  if (lastRow < 2) {
+    return;
+  }
+
+  const rows = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
+  rows.forEach(function (row) {
+    const email = normalizeString_(row[2]).toLowerCase();
+    if (!email) {
       return;
     }
 
-    const sheet = getSheet_(config.spreadsheetId, config.sheetName || DEFAULT_SHEET_NAME);
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 2) {
-      return;
+    if (!registrationsByEmail[email]) {
+      registrationsByEmail[email] = [];
     }
 
-    const rows = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
-    rows.forEach(function (row) {
-      const email = normalizeString_(row[2]).toLowerCase();
-      if (!email) {
-        return;
-      }
-
-      if (!registrationsByEmail[email]) {
-        registrationsByEmail[email] = [];
-      }
-
-      registrationsByEmail[email].push({
-        id: normalizeString_(row[8]) || eventId,
-        title: normalizeString_(row[7]) || EVENT_ID_TO_TITLE[eventId] || eventId,
-        date: EVENT_ID_TO_DATE[eventId] || EVENT_DATE_LABEL
-      });
+    registrationsByEmail[email].push({
+      id: normalizeString_(row[8]),
+      title: normalizeString_(row[7]),
+      date: EVENT_ID_TO_DATE[normalizeString_(row[8])] || EVENT_DATE_LABEL
     });
   });
 
