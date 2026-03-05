@@ -5,7 +5,7 @@ import { EVENTS, GOOGLE_SCRIPT_URL } from '../constants';
 const SIMULATED_DB: RegistrationFormData[] = [
   {
     fullName: "JCET Ranatantra",
-    email: "jcetvaibhav@gmail.com", // This matches the user's currently logged-in account
+    email: "participant@example.com", // This matches the simulated user account
     phone: "9876543210",
     college: "Jain College of Engineering and Technology",
     department: "Computer Science",

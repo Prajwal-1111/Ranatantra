@@ -25,79 +25,32 @@ const ADMIN_ALLOWED_EMAILS = [
   'jcetvaibhav@gmail.com',
   'prajwaljinagi63@gmail.com',
   'dharwadzishan@gmail.com',
-  'sachitsarangamath44@gmail.com'
+  'sachitsarangamath44@gmail.com',
+  'vishal.ishwar.ponaji@gmail.com'
 ];
 
 const EVENT_SHEET_MAP = {
   e1: { spreadsheetId: '1VnBiox2fD8hO3M4cQH90TozkEEHNAk8Z_AHVcxCe7w8', sheetName: DEFAULT_SHEET_NAME },
   e2: { spreadsheetId: '1CLTK4aMGGdGzaXg9qk_WwJa5-W0s92r_XUPx4BVsIsA', sheetName: DEFAULT_SHEET_NAME },
-  e3: { spreadsheetId: '1DPwxrchkyrDlytQouSlsihyHS1uCDOIF2-XLCnQ6x1M', sheetName: DEFAULT_SHEET_NAME },
-  e4: { spreadsheetId: '17K8E1UST2adSAIGGwXOlO54XTCuUtx4W0HHIGyaTrvM', sheetName: DEFAULT_SHEET_NAME },
-  e5: { spreadsheetId: '1m_5csngk1Y5CG7CW_0VbRlSpOIwUpfxkHpaupOBqfIo', sheetName: DEFAULT_SHEET_NAME },
-  e6: { spreadsheetId: '17BAD5CBBtcMHNJEazb-epppJoazGsKd62vZuL_9-cuc', sheetName: DEFAULT_SHEET_NAME },
-  e7: { spreadsheetId: '1JxcVaYAbMFPCmtC61PqapNoqXUogIs_Ab22dLc1PQjs', sheetName: DEFAULT_SHEET_NAME },
-  e8: { spreadsheetId: '12zsrckESHgKTrg804KEENUmAMCMR86d2vKem8jD0OYc', sheetName: DEFAULT_SHEET_NAME },
-  e9: { spreadsheetId: '1PrbQ5-CedLDepaHAAzRK5BRDfNdDp2yTgBoNfbZfvJs', sheetName: DEFAULT_SHEET_NAME },
-  e10: { spreadsheetId: '1wiokWotdzXmcdVSLzblY6VfhbwmlvPHRd2p_uaBCEpw', sheetName: DEFAULT_SHEET_NAME },
-  e11: { spreadsheetId: '1KMIwBMDWeheeoocVV7bOtoiEbap4jO87vS4sDcTzbkM', sheetName: DEFAULT_SHEET_NAME },
-  e12: { spreadsheetId: '1hVXYSe4IJbbfFVkPG2Xv_PTe_mUizHGqBcZrssMZtLI', sheetName: DEFAULT_SHEET_NAME },
-  e13: { spreadsheetId: '1X3cJt_vKRPZJJ16wWsGbzF0lmWG8cIUIQap_MU6wzHw', sheetName: DEFAULT_SHEET_NAME },
-  e14: { spreadsheetId: '1jZ5GXfeuqNZK4hdSdSPLycFEWJP1goe3T9_C3u9USyU', sheetName: DEFAULT_SHEET_NAME },
-  e15: { spreadsheetId: '1a2QtQ9UpD6gCICtll_9HS0aeVuSwsAv7mbEMfFIlaQo', sheetName: DEFAULT_SHEET_NAME }
+  e3: { spreadsheetId: '1DPwxrchkyrDlytQouSlsihyHS1uCDOIF2-XLCnQ6x1M', sheetName: DEFAULT_SHEET_NAME }
 };
 
 const EVENT_ID_TO_TITLE = {
-  e1: 'Project Pitch Day',
-  e2: 'AI Prompt Battle',
-  e3: 'Melody Mania & Dance Infusion',
-  e4: 'Cooking Without Fire',
-  e5: 'Blind Fold Taste Test',
-  e6: 'Survey Hunt',
-  e7: 'Art Gallery',
-  e8: 'Spot Acting Battle',
-  e9: 'Game Zone',
-  e10: 'Tallest Tower Challenge',
-  e11: 'Cinematic Campus Video',
-  e12: 'Meme Challenge',
-  e13: 'Laugh Logic Loot',
-  e14: 'Dialogue Delivery Battle',
-  e15: 'Minute Master'
+  e1: 'Netrtva Tantra (Best Manager)',
+  e2: 'Prachara Tantra (Marketing)',
+  e3: 'Kosh Tantra (Finance)'
 };
 
 const EVENT_ID_TO_DATE = {
   e1: 'March 27, 2026',
-  e2: 'March 28, 2026',
-  e3: 'March 28, 2026',
-  e4: 'March 27, 2026',
-  e5: 'March 27, 2026',
-  e6: 'March 27, 2026',
-  e7: 'March 27, 2026',
-  e8: 'March 27, 2026',
-  e9: 'March 27, 2026',
-  e10: 'March 28, 2026',
-  e11: 'March 28, 2026',
-  e12: 'March 28, 2026',
-  e13: 'March 28, 2026',
-  e14: 'March 28, 2026',
-  e15: 'March 28, 2026'
+  e2: 'March 27, 2026',
+  e3: 'March 27, 2026'
 };
 
 const EVENT_TITLE_TO_ID = {
-  projectpitchday: 'e1',
-  aipromptbattle: 'e2',
-  melodymaniaanddanceinfusion: 'e3',
-  cookingwithoutfire: 'e4',
-  blindfoldtastetest: 'e5',
-  surveyhunt: 'e6',
-  artgallery: 'e7',
-  spotactingbattle: 'e8',
-  gamezone: 'e9',
-  tallesttowerchallenge: 'e10',
-  cinematiccampusvideo: 'e11',
-  memechallenge: 'e12',
-  laughlogicloot: 'e13',
-  dialoguedeliverybattle: 'e14',
-  minutemaster: 'e15'
+  netrtvatantrabestmanager: 'e1',
+  pracharatantramarketing: 'e2',
+  koshtantrafinance: 'e3'
 };
 
 function doGet(e) {
@@ -283,7 +236,7 @@ function doPost(e) {
         normalizeString_(data.year),
         resolved.eventTitle,
         resolved.eventId,
-        normalizeString_(data.registrationId) || ('VBHV-' + resolved.eventId.toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000)),
+        normalizeString_(data.registrationId) || ('RNTR-' + resolved.eventId.toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000)),
         paymentId,
         paymentLink
       ];
@@ -666,7 +619,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
     const phone = normalizeString_(data.phone) || '';
     const college = normalizeString_(data.college) || '';
 
-    const subject = "🎆 Access Granted: You're Officially In for Vaibhav 2K26!";
+    const subject = "🎆 Access Granted: You're Officially In for Ranatantra MBA Fest!";
 
     // Build event cards HTML
     var eventCardsHtml = '';
@@ -738,7 +691,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
 
       // ── Logo Header ──
       + '<tr><td align="center" style="padding:24px 0 20px;">'
-      + '<img src="https://www.vaibhav2k26.online/logo.png.bak" alt="Vaibhav 2K26" width="120" height="120" style="display:block;border:none;outline:none;" />'
+      + '<img src="https://www.vaibhav2k26.online/logo.png" alt="Ranatantra" width="120" height="120" style="display:block;border:none;outline:none;" />'
       + '</td></tr>'
 
       // ── Main Card ──
@@ -749,7 +702,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
       + '<tr><td style="background:linear-gradient(135deg,#FF0055 0%,#cc0044 50%,#990033 100%);padding:36px 32px;text-align:center;">'
       + '<p style="margin:0 0 4px;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.8);font-weight:600;">MARCH 27-28, 2026</p>'
       + '<h1 style="margin:0;font-size:32px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;font-family:\'Segoe UI\',Arial,sans-serif;">ACCESS GRANTED ✅</h1>'
-      + '<p style="margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.85);">Your registration for Vaibhav 2K26 is confirmed</p>'
+      + '<p style="margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.85);">Your registration for Ranatantra MBA Management Fest is confirmed</p>'
       + '</td></tr>'
 
       // ── Greeting ──
@@ -797,7 +750,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
 
       // ── CTA Button ──
       + '<tr><td align="center" style="padding:0 32px 32px;">'
-      + '<a href="https://www.vaibhav2k26.online/#/dashboard" style="display:inline-block;background:#FF0055;color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">View Dashboard →</a>'
+      + '<a href="https://ranatantra.vercel.app/#/dashboard" style="display:inline-block;background:#FF0055;color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">View Dashboard →</a>'
       + '</td></tr>'
 
       + '</table>' // end main card
@@ -805,7 +758,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
 
       // ── Footer ──
       + '<tr><td style="padding:28px 0;text-align:center;">'
-      + '<p style="margin:0 0 8px;font-size:13px;color:#666;">Made with 🔥 by the Vaibhav 2K26 Team</p>'
+      + '<p style="margin:0 0 8px;font-size:13px;color:#666;">Made with 🔥 by the Ranatantra Team</p>'
       + '<p style="margin:0;font-size:12px;color:#444;">Jain College of Engineering & Technology, Hubballi</p>'
       + '<p style="margin:12px 0 0;font-size:11px;color:#333;">This is an automated confirmation. Do not reply to this email.</p>'
       + '</td></tr>'
@@ -820,14 +773,14 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
       return '- ' + eventItem.title + ' (' + eventItem.date + ')';
     });
     var plainBody = 'Hi ' + fullName + ',\n\n'
-      + 'Your registration for Vaibhav 2K26 is confirmed!\n\n'
+      + 'Your registration for Ranatantra MBA Management Fest is confirmed!\n\n'
       + 'Your Event Lineup:\n' + eventLines.join('\n') + '\n\n'
       + (regId ? 'Registration ID: ' + regId + '\n' : '')
       + (paymentId ? 'Payment ID: ' + paymentId + '\n' : '')
       + '\nVenue: Jain College of Engineering & Technology, Hubballi\n'
       + 'Date: March 27-28, 2026\n\n'
       + 'Bring your college ID card for entry.\n\n'
-      + 'See you at the fest!\nVaibhav 2K26 Team';
+      + 'See you at the fest!\nRanatantra Team';
 
     MailApp.sendEmail({
       to: email,

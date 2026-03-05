@@ -1,5 +1,5 @@
-export const AUTH_TOKEN_KEY = 'vaibhav2k26_token';
-export const AUTH_CHANGED_EVENT = 'vaibhav2k26_auth_changed';
+export const AUTH_TOKEN_KEY = 'ranatantra_token';
+export const AUTH_CHANGED_EVENT = 'ranatantra_auth_changed';
 
 export type AuthUser = {
   name: string;

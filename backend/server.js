@@ -44,9 +44,7 @@ const saveDB = () => {
 
 // Server-side event fee map (single source of truth for pricing)
 const EVENT_FEES = {
-    e1: 1, e2: 1, e3: 1, e4: 1, e5: 1,
-    e6: 1, e7: 1, e8: 1, e9: 1, e10: 1,
-    e11: 1, e12: 1, e13: 1, e14: 1, e15: 1,
+    e1: 1, e2: 1, e3: 1,
 };
 
 /**
