@@ -70,7 +70,7 @@ const Home: React.FC = () => {
           </div>
 
           <div className="inline-block -mt-12 md:-mt-32 mb-3 md:mb-6 px-4 py-1.5 rounded-full border border-secondary/50 bg-secondary/10 text-secondary text-sm font-bold tracking-widest uppercase shadow-[0_0_15px_rgba(0,255,255,0.3)] backdrop-blur-sm relative z-20">
-            March 27-28, 2026
+            March 27, 2026
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center w-full sm:w-auto px-4 sm:px-0">
