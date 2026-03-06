@@ -4,6 +4,7 @@ import { getAllRegistrationsForAdmin } from '../services/googleSheets';
 import { clearAuthToken, getAuthUserFromToken, getStoredAuthUser, persistAuthToken, type AuthUser } from '../services/authSession';
 import { AlertCircle, Loader2, LogOut, Shield, Users, RefreshCcw, Download, DollarSign, TrendingUp, UserCheck, CreditCard, Filter, Search, ChevronDown } from 'lucide-react';
 import type { AdminRegistrationRecord } from '../types';
+import { AdminSkeleton } from '../components/Skeleton';
 
 declare const google: any;
 
@@ -352,15 +353,7 @@ const Admin: React.FC = () => {
             {/* ── Data ── */}
             <div className="bg-card/30 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.4)]">
               {loading ? (
-                <div className="flex flex-col items-center justify-center py-24 gap-4">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Shield className="w-6 h-6 text-primary/60" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-400 font-mono">Loading registrations...</p>
-                </div>
+                <AdminSkeleton />
               ) : filteredRows.length === 0 && !message ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">

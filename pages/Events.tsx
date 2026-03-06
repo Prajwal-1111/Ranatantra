@@ -5,6 +5,7 @@ import { Calendar, MapPin, Users, ArrowUpRight, Download, Info, X, ShieldCheck }
 import { EventDetails } from '../types';
 
 import { motion } from 'framer-motion';
+import TiltCard from '../components/TiltCard';
 
 const Events: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<EventDetails | null>(null);
@@ -35,71 +36,76 @@ const Events: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-card/40 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 group flex flex-col hover:shadow-[0_0_30px_rgba(255,0,85,0.15)] hover:-translate-y-2"
             >
-              <div className="relative h-40 md:h-56 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-darker to-transparent z-10 opacity-80"></div>
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="absolute top-4 right-4 z-20">
-                  <span className="inline-block px-3 py-1 bg-black/50 backdrop-blur border border-primary/50 text-primary text-xs font-bold uppercase tracking-wider rounded">
-                    {event.category}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4 md:p-6 flex-1 flex flex-col relative">
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3 font-mono group-hover:text-primary transition-colors">{event.title}</h3>
-                <p className="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">{event.description}</p>
-
-                <div className="space-y-3 mb-8 border-t border-white/5 pt-4">
-                  <div className="flex items-center text-gray-400 text-sm">
-                    <Calendar className="w-4 h-4 mr-3 text-secondary" />
-                    {event.date} • {event.time}
-                  </div>
-                  <div className="flex items-center text-gray-400 text-sm">
-                    <MapPin className="w-4 h-4 mr-3 text-secondary" />
-                    {event.venue}
-                  </div>
-                  <div className="flex items-center text-gray-400 text-sm">
-                    <Users className="w-4 h-4 mr-3 text-secondary" />
-                    {event.teamSize}
+              <TiltCard
+                className="bg-card/40 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 group flex flex-col hover:shadow-[0_0_30px_rgba(255,0,85,0.15)]"
+                glowColor="rgba(255, 0, 85, 0.3)"
+                tiltIntensity={10}
+              >
+                <div className="relative h-40 md:h-56 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-darker to-transparent z-10 opacity-80"></div>
+                  <img
+                    src={event.image}
+                    alt={event.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute top-4 right-4 z-20">
+                    <span className="inline-block px-3 py-1 bg-black/50 backdrop-blur border border-primary/50 text-primary text-xs font-bold uppercase tracking-wider rounded">
+                      {event.category}
+                    </span>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Link
-                    to={`/register?event=${encodeURIComponent(event.id)}`}
-                    state={{ preselectedEventId: event.id }}
-                    className="flex-1 text-center bg-white/5 hover:bg-primary hover:text-white text-white font-bold py-3 rounded-xl transition-all border border-white/10 hover:border-primary group-hover:shadow-[0_0_15px_rgba(255,0,85,0.4)] flex items-center justify-center gap-1.5 text-sm md:text-base"
-                  >
-                    REGISTER
-                  </Link>
-                  <button
-                    onClick={() => setSelectedEvent(event)}
-                    className="flex-1 bg-white/5 hover:bg-tertiary hover:text-darker text-tertiary font-bold py-3 rounded-xl transition-all border border-tertiary/30 hover:border-tertiary flex items-center justify-center gap-1.5 text-sm md:text-base group-hover:shadow-[0_0_15px_rgba(255,0,255,0.3)]"
-                  >
-                    DETAILS
-                  </button>
-                  {event.rulebookUrl && (
-                    <a
-                      href={event.rulebookUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 bg-white/5 hover:bg-secondary hover:text-darker text-secondary font-bold rounded-xl transition-all border border-secondary/30 hover:border-secondary flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(0,255,255,0.3)]"
-                      title="Download Rulebook"
-                      download
+                <div className="p-4 md:p-6 flex-1 flex flex-col relative">
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3 font-mono group-hover:text-primary transition-colors">{event.title}</h3>
+                  <p className="text-gray-400 text-sm mb-6 flex-1 leading-relaxed">{event.description}</p>
+
+                  <div className="space-y-3 mb-8 border-t border-white/5 pt-4">
+                    <div className="flex items-center text-gray-400 text-sm">
+                      <Calendar className="w-4 h-4 mr-3 text-secondary" />
+                      {event.date} • {event.time}
+                    </div>
+                    <div className="flex items-center text-gray-400 text-sm">
+                      <MapPin className="w-4 h-4 mr-3 text-secondary" />
+                      {event.venue}
+                    </div>
+                    <div className="flex items-center text-gray-400 text-sm">
+                      <Users className="w-4 h-4 mr-3 text-secondary" />
+                      {event.teamSize}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Link
+                      to={`/register?event=${encodeURIComponent(event.id)}`}
+                      state={{ preselectedEventId: event.id }}
+                      className="flex-1 text-center bg-white/5 hover:bg-primary hover:text-white text-white font-bold py-3 rounded-xl transition-all border border-white/10 hover:border-primary group-hover:shadow-[0_0_15px_rgba(255,0,85,0.4)] flex items-center justify-center gap-1.5 text-sm md:text-base"
                     >
-                      <Download className="w-5 h-5" />
-                    </a>
-                  )}
+                      REGISTER
+                    </Link>
+                    <button
+                      onClick={() => setSelectedEvent(event)}
+                      className="flex-1 bg-white/5 hover:bg-tertiary hover:text-darker text-tertiary font-bold py-3 rounded-xl transition-all border border-tertiary/30 hover:border-tertiary flex items-center justify-center gap-1.5 text-sm md:text-base group-hover:shadow-[0_0_15px_rgba(255,0,255,0.3)]"
+                    >
+                      DETAILS
+                    </button>
+                    {event.rulebookUrl && (
+                      <a
+                        href={event.rulebookUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 bg-white/5 hover:bg-secondary hover:text-darker text-secondary font-bold rounded-xl transition-all border border-secondary/30 hover:border-secondary flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(0,255,255,0.3)]"
+                        title="Download Rulebook"
+                        download
+                      >
+                        <Download className="w-5 h-5" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </TiltCard>
             </motion.div>
           ))}
         </div>

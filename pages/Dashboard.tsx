@@ -4,6 +4,7 @@ import { clearAuthToken, getAuthUserFromToken, getStoredAuthUser, persistAuthTok
 import { getRegistrations } from '../services/googleSheets';
 import { Loader2, AlertCircle, LayoutDashboard, User, LogOut, Ticket, Calendar, RefreshCcw, MapPin, Clock, Hash, CreditCard, Tag, QrCode } from 'lucide-react';
 import DigitalPass from '../components/DigitalPass';
+import { DashboardSkeleton } from '../components/Skeleton';
 
 // Declare google global for TypeScript
 declare const google: any;
@@ -183,9 +184,7 @@ const Dashboard: React.FC = () => {
                             </div>
 
                             {loading ? (
-                                <div className="flex items-center justify-center py-20">
-                                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                                </div>
+                                <DashboardSkeleton />
                             ) : registrations.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {registrations.map((event, index) => {
