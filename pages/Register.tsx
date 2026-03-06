@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { EVENTS, GOOGLE_CLIENT_ID, MBA_EVENT_TITLES } from '../constants';
+import { EVENTS, GOOGLE_CLIENT_ID, MBA_EVENT_TITLES, BACKEND_URL, RAZORPAY_KEY } from '../constants';
 import { useLocation } from 'react-router-dom';
 
 import { getRegistrations, submitRegistration } from '../services/googleSheets';
@@ -223,7 +223,7 @@ const Register: React.FC = () => {
       const totalAmount = MBA_EVENT_TITLES.length * 1; // 3 INR
 
       // 2. Create Order in Backend
-      const createOrderRes = await fetch('http://localhost:5000/api/create-order', {
+      const createOrderRes = await fetch(`${BACKEND_URL}/api/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -242,7 +242,7 @@ const Register: React.FC = () => {
 
       // 3. Trigger Razorpay
       const options = {
-        key: 'rzp_test_yourkey', // This is usually fetched from constants or backend
+        key: RAZORPAY_KEY,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Ranatantra 2026",
@@ -253,7 +253,7 @@ const Register: React.FC = () => {
           try {
             setMessage('Verifying Payment...');
             // 4. Verify Payment in Backend
-            const verifyRes = await fetch('http://localhost:5000/api/verify-payment', {
+            const verifyRes = await fetch(`${BACKEND_URL}/api/verify-payment`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

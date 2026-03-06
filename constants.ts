@@ -6,6 +6,10 @@ export const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZ3u_
 // Replace with your Google Cloud Client ID (for Google Sign-In)
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '967099015304-3at146naslvniojgrhirrjv04bpb50lo.apps.googleusercontent.com';
 
+// Razorpay & Backend Config
+export const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SMPLH5DFYeMquJ';
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.ranatantra.online');
+
 // Only these Google accounts can access the Admin page.
 export const DEFAULT_KEYWORDS =
   'MBA Fest, management fest, JCET, JCET Hubballi, Jain College of Engineering and Technology, Jain College Hubli, MBA events, management competition, Hubli';
