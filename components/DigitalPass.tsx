@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { X, Download, Share2, Check, Ticket, Calendar, MapPin, Shield } from 'lucide-react';
 
 interface DigitalPassProps {
@@ -32,18 +32,45 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
     const handleDownload = async () => {
         if (!passRef.current) return;
         setDownloading(true);
+
         try {
+            // Ensure all images are fully loaded before capturing
+            const images = passRef.current.querySelectorAll('img');
+            const imagePromises = Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            });
+
+            await Promise.all(imagePromises);
+
+            // Short delay to ensure SVG QR code has stabilized in the DOM
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             const html2canvas = (await import('html2canvas')).default;
             const canvas = await html2canvas(passRef.current, {
                 backgroundColor: '#0a0015',
-                scale: 3,
+                scale: 2, // 2x is plenty for mobile and more stable than 3x
                 useCORS: true,
                 logging: false,
+                allowTaint: true,
+                onclone: (clonedDoc) => {
+                    // Ensure the cloned version is visible for capture
+                    const element = clonedDoc.querySelector('[ref="passRef"]') as HTMLElement;
+                    if (element) {
+                        element.style.transform = 'none';
+                    }
+                }
             });
+
             const link = document.createElement('a');
             link.download = `Ranatantra-Pass-${user.name.replace(/\s+/g, '_')}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.href = canvas.toDataURL('image/png', 1.0);
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         } catch (err) {
             console.error('Download failed:', err);
         }
@@ -196,7 +223,7 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                     {/* QR Code Section */}
                     <div className="px-6 py-6 text-center">
                         <div className="bg-white rounded-2xl p-4 inline-block shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                            <QRCodeSVG
+                            <QRCodeCanvas
                                 value={qrData}
                                 size={180}
                                 level="H"
