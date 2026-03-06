@@ -214,14 +214,97 @@ const Register: React.FC = () => {
     setGeneratedRegId(uniqueId);
 
     setStatus('submitting');
-    setMessage('Finalizing your registration...');
+    setMessage('Processing Payment...');
 
+    try {
+      // 1. Calculate Total Amount
+      // For MBA fast registration, we usually have a fixed price or sum of events.
+      // Based on constants, each of the 3 events is 1 INR currently.
+      const totalAmount = MBA_EVENT_TITLES.length * 1; // 3 INR
+
+      // 2. Create Order in Backend
+      const createOrderRes = await fetch('http://localhost:5000/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          selectedEventIds: ['e1', 'e2', 'e3'], // Direct IDs for MBA events
+          currency: 'INR',
+          email: formData.email,
+          phone: formData.phone,
+          name: formData.fullName
+        })
+      });
+
+      const orderData = await createOrderRes.json();
+      if (!orderData.success) {
+        throw new Error(orderData.error || 'Failed to initialize payment.');
+      }
+
+      // 3. Trigger Razorpay
+      const options = {
+        key: 'rzp_test_yourkey', // This is usually fetched from constants or backend
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Ranatantra 2026",
+        description: "MBA Fest Registration Package",
+        image: "/logo.png",
+        order_id: orderData.order_id,
+        handler: async (response: any) => {
+          try {
+            setMessage('Verifying Payment...');
+            // 4. Verify Payment in Backend
+            const verifyRes = await fetch('http://localhost:5000/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+            if (!verifyData.success) {
+              throw new Error('Payment verification failed.');
+            }
+
+            // 5. If Payment Verified, Finalize Google Sheets Registration
+            setMessage('Payment Verified! Finalizing registration...');
+            await finalizeGoogleRegistration(response.razorpay_payment_id, uniqueId);
+          } catch (err: any) {
+            setStatus('error');
+            setMessage(err.message || 'Payment verification failed.');
+          }
+        },
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone
+        },
+        theme: { color: "#ff0055" },
+        modal: {
+          ondismiss: () => {
+            setStatus('idle');
+            setMessage('');
+          }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+
+    } catch (error: any) {
+      setStatus('error');
+      setMessage(error.message || 'An unexpected error occurred. Please try again.');
+    }
+  };
+
+  const finalizeGoogleRegistration = async (paymentId: string, uniqueId: string) => {
     try {
       let fileData: { base64: string; fileName: string; contentType: string } | null = null;
 
-      // Convert file to base64 if exists
       if (collegeIdFile) {
-        setMessage('Processing IDs...');
+        setMessage('Uploading Identity Documents...');
         const reader = new FileReader();
         fileData = await new Promise((resolve, reject) => {
           reader.onload = () => {
@@ -241,19 +324,17 @@ const Register: React.FC = () => {
       const payload: any = {
         ...formData,
         registrationId: uniqueId,
-        collegeIdFile: fileData, // Include the file data
-        razorpayPaymentId: formData.razorpayPaymentId || `SIM-${uniqueId}`
+        collegeIdFile: fileData,
+        razorpayPaymentId: paymentId
       };
 
-      // Start the submission
-      setMessage('Sending data...');
+      setMessage('Securing your spot...');
       const response = await submitRegistration(payload);
 
       if (response.status === 'success') {
         setStatus('success');
-        setMessage(response.message || 'Registration successful!');
+        setMessage('Payment successful & Identity verified! Welcome to Ranatantra.');
 
-        // Reset form but keep the email for caching
         setFormData(prev => ({
           ...prev,
           phone: '',
@@ -270,8 +351,6 @@ const Register: React.FC = () => {
           agreeToRules: false,
         }));
         setCollegeIdFile(null);
-
-        // Refresh local cache in scientific background
         fetchRegisteredEvents(formData.email, true);
       } else {
         setStatus('error');
@@ -279,7 +358,7 @@ const Register: React.FC = () => {
       }
     } catch (error) {
       setStatus('error');
-      setMessage('An unexpected error occurred. Please try again.');
+      setMessage('Registration failed after payment. Please contact support with Payment ID: ' + paymentId);
     }
   };
 
