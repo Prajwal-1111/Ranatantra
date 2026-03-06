@@ -9,7 +9,7 @@ const About: React.FC = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <motion.div
-                    className="text-center mb-16"
+                    className="text-center mb-10 md:mb-16"
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
@@ -80,7 +80,7 @@ const About: React.FC = () => {
                 </div>
 
                 {/* College Section */}
-                <div className="mt-20 pt-20 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div className="mt-12 md:mt-20 pt-12 md:pt-20 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
                     <motion.div
                         className="order-2 md:order-1 relative group"
                         initial={{ opacity: 0, x: -50 }}

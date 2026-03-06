@@ -3,8 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-darker text-slate-200 font-sans overflow-x-hidden;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   h1,
@@ -14,6 +21,16 @@
   h5,
   h6 {
     @apply font-mono;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Ensure images never cause horizontal scroll */
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+    height: auto;
   }
 }
 
@@ -75,6 +92,18 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 }
 
 ::-webkit-scrollbar {
@@ -92,4 +121,40 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #d40045;
+}
+
+/* ── Mobile Optimizations ── */
+@media (max-width: 767px) {
+
+  /* Remove heavy animations on mobile for performance */
+  .animate-pulse-slow {
+    animation-duration: 4s;
+  }
+
+  /* Ensure all interactive elements have minimum tap size */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  /* Hide scrollbar on mobile for a cleaner look */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

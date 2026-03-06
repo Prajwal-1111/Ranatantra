@@ -159,14 +159,19 @@ const Admin: React.FC = () => {
 
         {/* ── Header ── */}
         <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div className="animate-fade-in-up">
+          <div className="animate-fade-in-up flex flex-col items-start">
+            <img src="/logo.png" alt="Ranatantra Logo" className="h-14 md:h-18 w-auto mb-4 object-contain" />
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/40 bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(255,0,85,0.2)]">
-              <Shield className="w-3.5 h-3.5" /> ADMIN ACCESS
+              <Shield className="w-3.5 h-3.5" /> COMMAND CENTER
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white font-mono tracking-tighter uppercase leading-none">
               Command <span className="text-primary text-glow">Center</span>
             </h1>
             <p className="text-gray-400 mt-3 text-sm md:text-base">Real-time overview of all registrations and revenue.</p>
+            <a href="#/scanner" className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-secondary/10 border border-secondary/40 text-secondary text-sm font-bold rounded-xl hover:bg-secondary/20 transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="5" height="5" x="3" y="3" rx="1" /><rect width="5" height="5" x="16" y="3" rx="1" /><rect width="5" height="5" x="3" y="16" rx="1" /><path d="M21 16h-3a2 2 0 0 0-2 2v3" /><path d="M21 21v.01" /><path d="M12 7v3a2 2 0 0 1-2 2H7" /><path d="M3 12h.01" /><path d="M12 3h.01" /><path d="M12 16v.01" /><path d="M16 12h1" /><path d="M21 12v.01" /><path d="M12 21v-1" /></svg>
+              QR Scanner
+            </a>
           </div>
 
           {user && (

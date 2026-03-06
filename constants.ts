@@ -4,7 +4,7 @@ import { EventDetails } from './types';
 export const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyj0GWc2pGQcLkmQdHE-8aWSXt1u-wRFlfvv0JHHA_0eL9ZpFWj995GVQ3VPgwSQLIobg/exec';
 
 // Replace with your Google Cloud Client ID (for Google Sign-In)
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '258766307307-4o43namsrf53p4rc9o8shlm75sb483l9.apps.googleusercontent.com';
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '967099015304-3at146naslvniojgrhirrjv04bpb50lo.apps.googleusercontent.com';
 
 // Only these Google accounts can access the Admin page.
 export const DEFAULT_KEYWORDS =
@@ -33,7 +33,8 @@ export const EVENTS: EventDetails[] = [
     image: 'https://loremflickr.com/800/600/business,leadership',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1
+    fee: 1,
+    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   },
   {
     id: 'e2',
@@ -46,7 +47,8 @@ export const EVENTS: EventDetails[] = [
     image: 'https://loremflickr.com/800/600/marketing,advertising',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1
+    fee: 1,
+    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   },
   {
     id: 'e3',
@@ -59,7 +61,8 @@ export const EVENTS: EventDetails[] = [
     image: 'https://loremflickr.com/800/600/finance,money',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1
+    fee: 1,
+    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   }
 ];
 

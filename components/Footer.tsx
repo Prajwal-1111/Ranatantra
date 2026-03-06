@@ -12,9 +12,18 @@ const Footer: React.FC = () => {
 
           {/* Brand Info */}
           <div>
-            <h3 className="text-2xl font-mono font-bold text-white mb-4">
-              Rana<span className="text-primary">tantra</span>
-            </h3>
+            <div className="mb-6 flex items-center gap-4">
+              <img
+                src="/jgi-logo.png"
+                alt="JGI Logo"
+                className="h-12 md:h-14 w-auto object-contain"
+              />
+              <img
+                src="/logo.png"
+                alt="Ranatantra Logo"
+                className="h-16 md:h-20 w-auto object-contain"
+              />
+            </div>
             <p className="text-gray-500 mb-6 max-w-sm text-sm">
               <span className="text-white font-bold text-base block mb-2">Jain College of Engineering & Technology Hubballi</span>
               Join us for a thrilling college event filled with non-stop fun, excitement, and unforgettable memories! Get ready for games, music, and laughter with friends. Don't miss out on the ultimate campus experience! 🎉🎶🔥

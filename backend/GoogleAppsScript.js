@@ -5,14 +5,14 @@
  *
  * Setup:
  * 1. Create ONE Google Sheet with headers in row 1:
- *    Timestamp, Full Name, Email, Phone, College, Department, Year, Event, Event ID, Registration ID, Payment ID
+ *    Timestamp, Full Name, Email, Phone, College, Year, Registration ID, Payment ID, PaymentLink, Team Name, Member 1, Member 2, Member 3, Member 4, Accommodation
  * 2. Paste the spreadsheet ID in MASTER_SPREADSHEET_ID.
  * 3. Deploy as Web App (Execute as: Me, Access: Anyone).
  * 4. Use deployed URL as GOOGLE_SCRIPT_URL in frontend constants.ts.
  */
 
 const DEFAULT_SHEET_NAME = 'Sheet1';
-const EVENT_DATE_LABEL = 'March 27-28, 2026';
+const EVENT_DATE_LABEL = 'March 27, 2026';
 const USER_REGISTRATIONS_CACHE_PREFIX = 'user_registrations:';
 const USER_REGISTRATIONS_CACHE_TTL_SECONDS = 1800;
 const ADMIN_REGISTRATIONS_CACHE_KEY = 'admin_all_registrations';
@@ -74,7 +74,7 @@ function doGet(e) {
       const allRows = [];
 
       if (lastRow >= 2) {
-        const rows = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
+        const rows = sheet.getRange(2, 1, lastRow - 1, 15).getValues();
         rows.forEach(function (row) {
           allRows.push({
             timestamp: formatTimestamp_(row[0]),
@@ -82,13 +82,19 @@ function doGet(e) {
             email: normalizeString_(row[2]).toLowerCase(),
             phone: normalizeString_(row[3]),
             college: normalizeString_(row[4]),
-            department: normalizeString_(row[5]),
-            year: normalizeString_(row[6]),
-            eventTitle: normalizeString_(row[7]),
-            eventId: normalizeString_(row[8]),
-            eventDate: EVENT_ID_TO_DATE[normalizeString_(row[8])] || EVENT_DATE_LABEL,
-            registrationId: normalizeString_(row[9]),
-            razorpayPaymentId: normalizeString_(row[10])
+            year: normalizeString_(row[5]),
+            registrationId: normalizeString_(row[6]),
+            razorpayPaymentId: normalizeString_(row[7]),
+            paymentLink: normalizeString_(row[8]),
+            teamName: normalizeString_(row[9]),
+            member1Name: normalizeString_(row[10]),
+            member2Name: normalizeString_(row[11]),
+            member3Name: normalizeString_(row[12]),
+            member4Name: normalizeString_(row[13]),
+            accommodationRequired: normalizeString_(row[14]),
+            // For backward compatibility with any admin dashboard logic expecting these
+            eventTitle: 'MBA Fest Registration',
+            eventDate: EVENT_DATE_LABEL
           });
         });
       }
@@ -136,19 +142,26 @@ function doGet(e) {
     const allRegistrations = [];
 
     if (lastRow >= 2) {
-      const rows = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
+      const rows = sheet.getRange(2, 1, lastRow - 1, 15).getValues();
       rows.forEach(function (row) {
         if (normalizeString_(row[2]).toLowerCase() === email) {
-          allRegistrations.push({
-            id: normalizeString_(row[8]),
-            title: normalizeString_(row[7]),
-            date: EVENT_ID_TO_DATE[normalizeString_(row[8])] || EVENT_DATE_LABEL
+          const events = [
+            { id: 'e1', title: EVENT_ID_TO_TITLE['e1'] },
+            { id: 'e2', title: EVENT_ID_TO_TITLE['e2'] },
+            { id: 'e3', title: EVENT_ID_TO_TITLE['e3'] }
+          ];
+          events.forEach(function (evt) {
+            allRegistrations.push({
+              id: evt.id,
+              title: evt.title,
+              date: EVENT_DATE_LABEL,
+              registrationId: normalizeString_(row[6]),
+              timestamp: formatTimestamp_(row[0])
+            });
           });
         }
       });
-    }
-
-    // (Registration fetching finished)
+    }// (Registration fetching finished)
 
     const deduped = dedupeRegistrations_(allRegistrations);
     writeUserRegistrationsIndex_(email, deduped);
@@ -185,64 +198,51 @@ function doPost(e) {
       return createJSONOutput_({ status: 'error', message: 'Email and at least one event are required.' });
     }
 
-    const insertedEvents = [];
-    const skippedEvents = [];
-
     const sheet = getSheet_(MASTER_SPREADSHEET_ID, DEFAULT_SHEET_NAME);
     const lastRow = sheet.getLastRow();
 
-    selectedEvents.forEach(function (eventEntry) {
-      const resolved = resolveEvent_(eventEntry);
-      const alreadyRegistered = hasEmailAndEventInSheet_(sheet, lastRow, email, resolved.eventId);
-
-      if (alreadyRegistered) {
-        skippedEvents.push(resolved.eventTitle);
-        return;
-      }
-
-      const paymentId = normalizeString_(data.razorpayPaymentId) || '';
-      const paymentLink = paymentId ? 'https://dashboard.razorpay.com/app/payments/' + paymentId : '';
-
-      const row = [
-        new Date(),
-        normalizeString_(data.fullName),
-        email,
-        "'" + normalizeString_(data.phone),
-        normalizeString_(data.college),
-        normalizeString_(data.department),
-        normalizeString_(data.year),
-        resolved.eventTitle,
-        resolved.eventId,
-        normalizeString_(data.registrationId) || ('RNTR-' + resolved.eventId.toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000)),
-        paymentId,
-        paymentLink
-      ];
-
-      sheet.getRange(sheet.getLastRow() + 1, 1, 1, row.length).setValues([row]);
-      insertedEvents.push({
-        id: resolved.eventId,
-        title: resolved.eventTitle,
-        date: EVENT_ID_TO_DATE[resolved.eventId] || EVENT_DATE_LABEL
-      });
-    });
-
-    if (insertedEvents.length === 0) {
+    const alreadyRegistered = hasEmailInSheet_(sheet, lastRow, email);
+    if (alreadyRegistered) {
       return createJSONOutput_({
         status: 'error',
-        message: 'You are already registered for the selected event(s).'
+        message: 'You are already registered for the MBA Fest.'
       });
     }
 
+    const paymentId = normalizeString_(data.razorpayPaymentId) || '';
+    const paymentLink = paymentId ? 'https://dashboard.razorpay.com/app/payments/' + paymentId : '';
+
+    const row = [
+      new Date(),
+      normalizeString_(data.fullName),
+      email,
+      "'" + normalizeString_(data.phone),
+      normalizeString_(data.college),
+      normalizeString_(data.year),
+      normalizeString_(data.registrationId) || ('RNTR-MBA-' + Math.floor(1000 + Math.random() * 9000)),
+      paymentId,
+      paymentLink,
+      normalizeString_(data.teamName),
+      normalizeString_(data.member1Name),
+      normalizeString_(data.member2Name),
+      normalizeString_(data.member3Name),
+      normalizeString_(data.member4Name),
+      normalizeString_(data.accommodationRequired)
+    ];
+
+    sheet.getRange(sheet.getLastRow() + 1, 1, 1, row.length).setValues([row]);
+
+    const insertedEvents = [
+      { id: 'e1', title: EVENT_ID_TO_TITLE['e1'], date: EVENT_DATE_LABEL },
+      { id: 'e2', title: EVENT_ID_TO_TITLE['e2'], date: EVENT_DATE_LABEL },
+      { id: 'e3', title: EVENT_ID_TO_TITLE['e3'], date: EVENT_DATE_LABEL }
+    ];
+
     updateUserRegistrationsIndex_(email, insertedEvents);
     clearRegistrationsCaches_(email);
-    sendConfirmationEmail_(data, insertedEvents, skippedEvents);
+    sendConfirmationEmail_(data, insertedEvents, []);
 
-    const skippedCount = skippedEvents.length;
-    const message = skippedCount > 0
-      ? 'Registration successful for ' + insertedEvents.length + ' event(s). Skipped ' + skippedCount + ' already-registered event(s).'
-      : 'Registration successful for ' + insertedEvents.length + ' event(s).';
-
-    return createJSONOutput_({ status: 'success', message: message });
+    return createJSONOutput_({ status: 'success', message: 'Registration successful for MBA Fest.' });
   } catch (error) {
     return createJSONOutput_({ status: 'error', message: error.toString() });
   } finally {
@@ -474,14 +474,14 @@ function clearRegistrationsCaches_(email) {
 
 // getFirstMatchingRegistrationRow_ removed as it is legacy multi-sheet logic
 
-function hasEmailAndEventInSheet_(sheet, lastRow, email, eventId) {
+function hasEmailInSheet_(sheet, lastRow, email) {
   if (lastRow < 2) {
     return false;
   }
 
-  const data = sheet.getRange(2, 3, lastRow - 1, 7).getValues(); // Email is col 3, EventId is col 9 (offset 6)
+  const data = sheet.getRange(2, 3, lastRow - 1, 1).getValues(); // Email is col 3
   for (var i = 0; i < data.length; i++) {
-    if (normalizeString_(data[i][0]).toLowerCase() === email && normalizeString_(data[i][6]).toLowerCase() === eventId.toLowerCase()) {
+    if (normalizeString_(data[i][0]).toLowerCase() === email) {
       return true;
     }
   }
@@ -497,7 +497,7 @@ function rebuildAllUserIndexes_() {
     return;
   }
 
-  const rows = sheet.getRange(2, 1, lastRow - 1, 11).getValues();
+  const rows = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
   rows.forEach(function (row) {
     const email = normalizeString_(row[2]).toLowerCase();
     if (!email) {
@@ -508,10 +508,14 @@ function rebuildAllUserIndexes_() {
       registrationsByEmail[email] = [];
     }
 
-    registrationsByEmail[email].push({
-      id: normalizeString_(row[8]),
-      title: normalizeString_(row[7]),
-      date: EVENT_ID_TO_DATE[normalizeString_(row[8])] || EVENT_DATE_LABEL
+    const events = [
+      { id: 'e1', title: EVENT_ID_TO_TITLE['e1'], date: EVENT_DATE_LABEL },
+      { id: 'e2', title: EVENT_ID_TO_TITLE['e2'], date: EVENT_DATE_LABEL },
+      { id: 'e3', title: EVENT_ID_TO_TITLE['e3'], date: EVENT_DATE_LABEL }
+    ];
+
+    events.forEach(function (evt) {
+      registrationsByEmail[email].push(evt);
     });
   });
 
@@ -619,6 +623,18 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
         + '</tr>';
     }
 
+    var passId = regId || ('PASS-' + Utilities.base64Encode(Utilities.newBlob(email).getBytes()).substring(0, 8).toUpperCase());
+    var eventNames = eventTitles.map(function (e) { return typeof e === 'string' ? e : e.title; });
+    var qrDataObj = {
+      type: 'RANATANTRA_PASS',
+      passId: passId,
+      name: fullName,
+      email: email,
+      events: eventNames,
+      generatedAt: new Date().toISOString()
+    };
+    var qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&format=png&data=' + encodeURIComponent(JSON.stringify(qrDataObj));
+
     var htmlBody = '<!DOCTYPE html>'
       + '<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>'
       + '<body style="margin:0;padding:0;background:#05000A;font-family:\'Segoe UI\',Tahoma,Geneva,Verdana,sans-serif;">'
@@ -630,7 +646,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
 
       // ── Logo Header ──
       + '<tr><td align="center" style="padding:24px 0 20px;">'
-      + '<img src="https://www.vaibhav2k26.online/logo.png" alt="Ranatantra" width="120" height="120" style="display:block;border:none;outline:none;" />'
+      + '<img src="https://www.ranatantra.online/logo.png" alt="Ranatantra" width="120" height="120" style="display:block;border:none;outline:none;" />'
       + '</td></tr>'
 
       // ── Main Card ──
@@ -678,6 +694,16 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
       + '</td></tr></table>'
       + '</td></tr>'
 
+      // ── QR Code Section ──
+      + '<tr><td align="center" style="padding:0 32px 24px;">'
+      + '<table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">'
+      + '<tr><td align="center" style="padding:24px;">'
+      + '<p style="margin:0 0 16px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#05000A;font-weight:800;">YOUR DIGITAL PASS</p>'
+      + '<img src="' + qrCodeUrl + '" alt="QR Code" width="180" height="180" style="display:block;border:none;outline:none;" />'
+      + '<p style="margin:16px 0 0;font-size:11px;color:#666;font-family:\'Courier New\',monospace;font-weight:bold;">' + passId + '</p>'
+      + '</td></tr></table>'
+      + '</td></tr>'
+
       // ── Important Notes ──
       + '<tr><td style="padding:0 32px 28px;">'
       + '<table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,211,0,0.08);border:1px solid rgba(255,211,0,0.2);border-radius:12px;">'
@@ -689,7 +715,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
 
       // ── CTA Button ──
       + '<tr><td align="center" style="padding:0 32px 32px;">'
-      + '<a href="https://ranatantra.vercel.app/#/dashboard" style="display:inline-block;background:#FF0055;color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">View Dashboard →</a>'
+      + '<a href="https://www.ranatantra.online/#/dashboard" style="display:inline-block;background:#FF0055;color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">View Dashboard →</a>'
       + '</td></tr>'
 
       + '</table>' // end main card
@@ -716,8 +742,10 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
       + 'Your Event Lineup:\n' + eventLines.join('\n') + '\n\n'
       + (regId ? 'Registration ID: ' + regId + '\n' : '')
       + (paymentId ? 'Payment ID: ' + paymentId + '\n' : '')
+      + 'Digital Pass ID: ' + passId + '\n'
+      + 'QR Code Link: ' + qrCodeUrl + '\n'
       + '\nVenue: Jain College of Engineering & Technology, Hubballi\n'
-      + 'Date: March 27-28, 2026\n\n'
+      + 'Date: March 27, 2026\n\n'
       + 'Bring your college ID card for entry.\n\n'
       + 'See you at the fest!\nRanatantra Team';
 

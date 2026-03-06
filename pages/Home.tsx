@@ -56,6 +56,7 @@ const Home: React.FC = () => {
         </div>
 
         <div className="relative z-10 text-center px-4 max-w-5xl mx-auto flex flex-col items-center">
+          <h1 className="sr-only">Ranatantra 2026 - Official Hubballi Tech & Cultural Fest at JCET</h1>
 
           {/* Animated Logo */}
           <div className="relative group flex justify-center w-full">
@@ -150,22 +151,22 @@ const Home: React.FC = () => {
             <ChevronDown className="w-5 h-5 mt-2 text-secondary animate-bounce [animation-delay:180ms]" />
           </button>
         </div>
-      </section>
+      </section >
 
       {/* About Section */}
-      <motion.div
+      < motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <About />
-      </motion.div>
+      </motion.div >
 
 
 
       {/* Stats/Highlights */}
-      <motion.section
+      < motion.section
         className="py-20 bg-dark border-t border-primary/20"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -191,8 +192,8 @@ const Home: React.FC = () => {
             </div>
           </div>
         </div>
-      </motion.section>
-    </div>
+      </motion.section >
+    </div >
   );
 };
 

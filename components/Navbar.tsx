@@ -61,8 +61,15 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <NavLink to="/" className="flex items-center gap-2 group">
-            <span className="hidden xs:inline text-xl sm:text-2xl font-bold font-mono tracking-tighter text-white">
+          <NavLink to="/" className="flex items-center gap-2 sm:gap-4 group py-1">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <img
+                src="/jgi-logo.png"
+                alt="JGI Logo"
+                className="h-8 sm:h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
+            <span className="text-xl sm:text-2xl font-black font-mono tracking-tighter text-white">
               Rana<span className="text-primary text-glow">tantra</span>
             </span>
           </NavLink>
@@ -103,16 +110,16 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu Dropdown */}
       <div
-        className={`md:hidden absolute w-full h-screen overflow-y-auto bg-transparent backdrop-blur-md border-b border-primary/20 transition-all duration-300 ease-in-out ${isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+        className={`md:hidden absolute w-full h-[100dvh] overflow-y-auto bg-darker/95 backdrop-blur-xl border-b border-primary/20 transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[100dvh] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
           }`}
       >
-        <div className="px-4 pt-2 pb-6 space-y-2">
+        <div className="px-4 pt-4 pb-8 space-y-2">
           {navLinks.map((link) => (
             <NavLink
               key={link.name}
               to={link.path}
               className={({ isActive }) =>
-                `block px-3 py-3 rounded-md text-base font-bold uppercase tracking-wider ${isActive ? 'text-primary bg-primary/10 border-l-4 border-primary' : 'text-gray-300 hover:text-white hover:bg-white/5'
+                `block px-4 py-3.5 rounded-xl text-base font-bold uppercase tracking-wider transition-all ${isActive ? 'text-primary bg-primary/10 border-l-4 border-primary' : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`
               }
             >
@@ -121,7 +128,7 @@ const Navbar: React.FC = () => {
           ))}
           <NavLink
             to={actionLink.path}
-            className="block w-full text-center mt-4 bg-primary text-white font-bold py-3 uppercase tracking-wider shadow-[0_0_15px_rgba(255,0,85,0.4)]"
+            className="block w-full text-center mt-6 bg-primary text-white font-bold py-4 uppercase tracking-wider shadow-[0_0_15px_rgba(255,0,85,0.4)] rounded-xl text-lg"
           >
             {actionLink.mobileLabel}
           </NavLink>

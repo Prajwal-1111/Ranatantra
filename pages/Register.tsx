@@ -276,7 +276,12 @@ const Register: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px]"></div>
 
       <div className="w-full max-w-4xl bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] p-4 sm:p-6 md:p-10 relative z-10">
-        <div className="text-center mb-6 md:mb-8">
+        <div className="text-center mb-6 md:mb-8 flex flex-col items-center">
+          <img
+            src="/logo.png"
+            alt="Ranatantra Logo"
+            className="h-20 md:h-28 w-auto mb-6 object-contain"
+          />
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 font-mono tracking-tighter uppercase">
             MBA Fest <span className="text-primary">Registration</span>
           </h1>

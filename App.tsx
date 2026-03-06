@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Contact from './pages/Contact';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
+import QRScanner from './pages/QRScanner';
 import SeoManager from './components/SeoManager';
 import { getStoredAuthUser } from './services/authSession';
 import { getRegistrations } from './services/googleSheets';
@@ -52,6 +53,7 @@ const App: React.FC = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/scanner" element={<QRScanner />} />
           </Routes>
         </main>
         <Footer />

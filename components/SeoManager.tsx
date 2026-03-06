@@ -10,65 +10,71 @@ type PageMeta = {
 
 const SITE_NAME = 'Ranatantra';
 const DEFAULT_DESCRIPTION =
-  'Official website of Ranatantra, the flagship fest of JCET (Jain College of Engineering and Technology), Hubballi, Karnataka.';
+  'Ranatantra 2026 - The premier Technical and Cultural Fest of Jain College of Engineering and Technology (JCET), Hubballi. Join us for a fusion of innovation and talent.';
 const DEFAULT_KEYWORDS =
-  'Ranatantra, JCET, JCET Hubballi, JCET Hubli, Jain College of Engineering and Technology, Jain College Hubballi, tech fest, cultural fest, college events';
+  'Ranatantra 2026, JCET Hubballi, Jain College Hubballi, Hubballi Tech Fest, Engineering Fest Hubli, Cultural Fest Hubballi, Karnataka College Events, JCET Fest';
 const COLLEGE_NAME = 'Jain College of Engineering and Technology, Hubballi';
 const COLLEGE_ALIASES = ['JCET', 'JCET Hubballi', 'JCET Hubli'];
 
 const PAGE_METADATA: Record<string, PageMeta> = {
   '/': {
-    title: 'Ranatantra | JCET Hubballi Official Cultural & Tech Fest Website',
+    title: 'Ranatantra 2026 | Official Hubballi Tech & Cultural Fest at JCET',
     description:
-      'Discover Ranatantra, the official fest website of JCET Hubballi (Jain College of Engineering and Technology). Explore events and register online.',
-    keywords: `${DEFAULT_KEYWORDS}, Ranatantra official website, JCET event, JCET fest, register for tech fest`,
+      'Participate in Ranatantra 2026 at JCET Hubballi. Experience high-octane technical competitions, cultural talent hunts, and amazing student showcases. Register now!',
+    keywords: `${DEFAULT_KEYWORDS}, Ranatantra 2026 homepage, JCET Hubballi best fest, Hubballi Engineering Event`,
     robots: 'index, follow',
   },
   '/gallery': {
-    title: 'Gallery | Ranatantra at JCET Hubballi',
+    title: 'Festival Moments & Highlights | Ranatantra 2026 Gallery',
     description:
-      'Explore Ranatantra gallery moments from past editions at JCET Hubballi, including stage highlights, student participation, and celebrations.',
-    keywords: `${DEFAULT_KEYWORDS}, Ranatantra gallery, past events photos, event highlights`,
+      'Browse through the visual journey of Ranatantra. See photos and videos of past winners, celebrations, and high-energy performances at JCET.',
+    keywords: `${DEFAULT_KEYWORDS}, Ranatantra event photos, JCET fest highlights, Hubballi college gallery`,
     robots: 'index, follow',
   },
   '/events': {
-    title: 'Events at Ranatantra | JCET Hubballi',
+    title: 'All Competitions & Events | Ranatantra 2026 List',
     description:
-      'Browse all Ranatantra events by department and category. Find schedules, venues, and register for your favorite competitions.',
-    keywords: `${DEFAULT_KEYWORDS}, Ranatantra events, event list, technical competitions`,
+      'Explore all technical, management, and cultural events at Ranatantra 2026. Detailed rules, prize info, and venue details for all JCET competitions.',
+    keywords: `${DEFAULT_KEYWORDS}, Ranatantra competition list, engineering events Hubballi, management games Hubli`,
     robots: 'index, follow',
   },
   '/schedule': {
-    title: 'Schedule | Ranatantra at JCET Hubballi',
+    title: 'Event Timeline & Day Wise Schedule | Ranatantra 2026',
     description:
-      'Check the complete Ranatantra timeline for day-wise sessions, competitions, and event timings at JCET Hubballi.',
-    keywords: `${DEFAULT_KEYWORDS}, Ranatantra schedule, event timeline`,
+      'Complete day-wise timeline for Ranatantra 2026. Don\'t miss a single round of your favorite competitions at JCET Hubballi.',
+    keywords: `${DEFAULT_KEYWORDS}, Ranatantra event timings, JCET fest schedule 2026`,
     robots: 'index, follow',
   },
   '/register': {
-    title: 'Register for Ranatantra | JCET Hubballi',
+    title: 'Online Registration | Join Ranatantra 2026 Tech Fest',
     description:
-      'Complete your official Ranatantra registration and reserve your seat for technical events and student competitions.',
-    keywords: `${DEFAULT_KEYWORDS}, Ranatantra registration, register now`,
+      'Secure your spot at Ranatantra 2026. Register online for various technical and cultural events at Jain College of Engineering & Technology, Hubballi.',
+    keywords: `${DEFAULT_KEYWORDS}, Ranatantra 2026 registration online, JCET event signup`,
     robots: 'index, follow',
   },
   '/contact': {
-    title: 'Contact Ranatantra | JCET Hubballi Support',
+    title: 'Contact Local Organizers | Reach Out to Ranatantra JCET',
     description:
-      'Get support, phone, email, and venue details for Ranatantra at Jain College of Engineering & Technology Hubballi.',
-    keywords: `${DEFAULT_KEYWORDS}, Ranatantra contact, venue details`,
+      'Have questions? Contact the Ranatantra 2026 student organizing committee at JCET Hubballi for support, venue maps, and general queries.',
+    keywords: `${DEFAULT_KEYWORDS}, Ranatantra helpdesk, JCET Hubballi contact number, event coordinator details`,
     robots: 'index, follow',
   },
   '/dashboard': {
-    title: 'Participant Dashboard | Ranatantra',
-    description: 'Participant dashboard for managing your Ranatantra registrations.',
-    keywords: `${DEFAULT_KEYWORDS}, participant dashboard`,
+    title: 'Participant Profile | Ranatantra Digital Pass',
+    description: 'Login to access your Ranatantra 2026 digital entry pass and participation history.',
+    keywords: `${DEFAULT_KEYWORDS}, participant login`,
     robots: 'noindex, nofollow',
   },
   '/admin': {
-    title: 'Admin Panel | Ranatantra',
-    description: 'Admin panel for Ranatantra organizers.',
-    keywords: `${DEFAULT_KEYWORDS}, admin panel`,
+    title: 'Command Center | Admin Control Panel',
+    description: 'Restricted administrative access for the Ranatantra 2026 Organizing Committee.',
+    keywords: `${DEFAULT_KEYWORDS}, admin login`,
+    robots: 'noindex, nofollow',
+  },
+  '/scanner': {
+    title: 'Gate Pass Verification | QR Scanner',
+    description: 'In-venue entry verification scanner for Ranatantra 2026 organizers.',
+    keywords: `${DEFAULT_KEYWORDS}, qr scanner admin`,
     robots: 'noindex, nofollow',
   },
 };
@@ -104,7 +110,7 @@ const upsertStructuredData = (origin: string) => {
         alternateName: [SITE_NAME, ...COLLEGE_ALIASES.map((name) => `${name} Ranatantra`)],
         url: `${origin}/`,
         email: 'vishal.ishwar.ponaji@gmail.com',
-        logo: `${origin}/logo.png.bak`,
+        logo: `${origin}/logo.png`,
       },
       {
         '@type': 'CollegeOrUniversity',
@@ -142,7 +148,7 @@ const upsertStructuredData = (origin: string) => {
         eventStatus: 'https://schema.org/EventScheduled',
         eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         url: `${origin}/#/register`,
-        image: [`${origin}/logo.png.bak`],
+        image: [`${origin}/logo.png`],
         organizer: {
           '@id': `${origin}/#organization`,
         },
@@ -188,7 +194,7 @@ const SeoManager: React.FC = () => {
 
     const origin = window.location.origin;
     const canonicalUrl = pathname === '/' ? `${origin}/` : `${origin}/#${pathname}`;
-    const imageUrl = `${origin}/logo.png.bak`;
+    const imageUrl = `${origin}/logo.png`;
 
     document.title = metadata.title;
     document.documentElement.setAttribute('lang', 'en');
