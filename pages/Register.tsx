@@ -10,6 +10,27 @@ import { CheckCircle, AlertCircle, Loader2, Sparkles, User, LogOut, Users, Uploa
 // Declare google global for TypeScript
 declare const google: any;
 
+const ensureRazorpayLoaded = async (): Promise<void> => {
+  if ((window as any).Razorpay) return;
+
+  await new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]') as HTMLScriptElement | null;
+
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener('error', () => reject(new Error('Failed to load Razorpay checkout script.')), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Razorpay checkout script.'));
+    document.body.appendChild(script);
+  });
+};
+
 const Register: React.FC = () => {
   const location = useLocation();
   const [formData, setFormData] = useState<RegistrationFormData>({
@@ -36,6 +57,7 @@ const Register: React.FC = () => {
   const [generatedRegId, setGeneratedRegId] = useState<string>('');
   const [loadingRegisteredEvents, setLoadingRegisteredEvents] = useState(false);
   const [collegeIdFile, setCollegeIdFile] = useState<File | null>(null);
+  const [fileBase64, setFileBase64] = useState<{ base64: string; fileName: string; contentType: string } | null>(null);
 
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
@@ -173,7 +195,7 @@ const Register: React.FC = () => {
     if (status === 'error') setStatus('idle');
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<File | null>>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (file) {
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
@@ -189,8 +211,23 @@ const Register: React.FC = () => {
         e.target.value = '';
         return;
       }
+
+      setCollegeIdFile(file);
+      // Pre-process file to Base64 to save time later
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setFileBase64({
+          base64: result.split(',')[1],
+          fileName: file.name,
+          contentType: file.type
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setCollegeIdFile(null);
+      setFileBase64(null);
     }
-    setter(file);
     if (status === 'error') setStatus('idle');
   };
 
@@ -209,25 +246,24 @@ const Register: React.FC = () => {
   };
 
   const processRegistration = async () => {
-    // Generate ID immediately to show it during the "Sending" phase
     const uniqueId = `MBA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     setGeneratedRegId(uniqueId);
 
     setStatus('submitting');
-    setMessage('Processing Payment...');
+    setMessage('Connecting to Gateway...');
 
     try {
-      // 1. Calculate Total Amount
-      // For MBA fast registration, we usually have a fixed price or sum of events.
-      // Based on constants, each of the 3 events is 1 INR currently.
-      const totalAmount = MBA_EVENT_TITLES.length * 1; // 3 INR
+      if (!RAZORPAY_KEY) {
+        throw new Error('Razorpay key is missing.');
+      }
 
-      // 2. Create Order in Backend
+      await ensureRazorpayLoaded();
+
       const createOrderRes = await fetch(`${BACKEND_URL}/api/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          selectedEventIds: ['e1', 'e2', 'e3'], // Direct IDs for MBA events
+          selectedEventIds: EVENTS.map((event) => event.id),
           currency: 'INR',
           email: formData.email,
           phone: formData.phone,
@@ -236,23 +272,21 @@ const Register: React.FC = () => {
       });
 
       const orderData = await createOrderRes.json();
-      if (!orderData.success) {
+      if (!createOrderRes.ok || !orderData.success) {
         throw new Error(orderData.error || 'Failed to initialize payment.');
       }
 
-      // 3. Trigger Razorpay
       const options = {
         key: RAZORPAY_KEY,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Ranatantra 2026",
-        description: "MBA Fest Registration Package",
+        description: "MBA Fest Registration",
         image: "/logo.png",
         order_id: orderData.order_id,
         handler: async (response: any) => {
           try {
             setMessage('Verifying Payment...');
-            // 4. Verify Payment in Backend
             const verifyRes = await fetch(`${BACKEND_URL}/api/verify-payment`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -264,12 +298,11 @@ const Register: React.FC = () => {
             });
 
             const verifyData = await verifyRes.json();
-            if (!verifyData.success) {
+            if (!verifyRes.ok || !verifyData.success) {
               throw new Error('Payment verification failed.');
             }
 
-            // 5. If Payment Verified, Finalize Google Sheets Registration
-            setMessage('Payment Verified! Finalizing registration...');
+            setMessage('Finalizing Registration...');
             await finalizeGoogleRegistration(response.razorpay_payment_id, uniqueId);
           } catch (err: any) {
             setStatus('error');
@@ -285,7 +318,7 @@ const Register: React.FC = () => {
         modal: {
           ondismiss: () => {
             setStatus('idle');
-            setMessage('');
+            setMessage('Payment cancelled.');
           }
         }
       };
@@ -301,39 +334,19 @@ const Register: React.FC = () => {
 
   const finalizeGoogleRegistration = async (paymentId: string, uniqueId: string) => {
     try {
-      let fileData: { base64: string; fileName: string; contentType: string } | null = null;
-
-      if (collegeIdFile) {
-        setMessage('Uploading Identity Documents...');
-        const reader = new FileReader();
-        fileData = await new Promise((resolve, reject) => {
-          reader.onload = () => {
-            const result = reader.result as string;
-            const base64 = result.split(',')[1];
-            resolve({
-              base64,
-              fileName: collegeIdFile.name,
-              contentType: collegeIdFile.type
-            });
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(collegeIdFile);
-        });
-      }
-
       const payload: any = {
         ...formData,
         registrationId: uniqueId,
-        collegeIdFile: fileData,
+        collegeIdFile: fileBase64,
         razorpayPaymentId: paymentId
       };
 
-      setMessage('Securing your spot...');
+      setMessage('Syncing with Server...');
       const response = await submitRegistration(payload);
 
       if (response.status === 'success') {
         setStatus('success');
-        setMessage('Payment successful & Identity verified! Welcome to Ranatantra.');
+        setMessage('Registration Confirmed! Your Digital Pass is Ready.');
 
         setFormData(prev => ({
           ...prev,
@@ -351,6 +364,7 @@ const Register: React.FC = () => {
           agreeToRules: false,
         }));
         setCollegeIdFile(null);
+        setFileBase64(null);
         fetchRegisteredEvents(formData.email, true);
       } else {
         setStatus('error');
@@ -362,10 +376,10 @@ const Register: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateFinalForm()) return;
-    processRegistration(); // Don't await here to let UI update instantly
+    processRegistration();
   };
 
   const inputClasses = "w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-gray-600 sm:text-base text-sm";
@@ -514,7 +528,7 @@ const Register: React.FC = () => {
                           <div className="space-y-2">
                             <label className={labelClasses}>College ID (PDF/JPG) *</label>
                             <p className="text-[9px] text-gray-500 mb-1 -mt-1 uppercase tracking-tighter">Merge all 5 member IDs into 1 single PDF file</p>
-                            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileChange(e, setCollegeIdFile)} className="w-full text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/20 file:text-primary file:font-bold cursor-pointer" />
+                            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="w-full text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/20 file:text-primary file:font-bold cursor-pointer" />
                             {collegeIdFile && <p className="text-[10px] text-green-400 font-bold truncate">{collegeIdFile.name}</p>}
                           </div>
                         </div>

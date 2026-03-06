@@ -15,12 +15,19 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
 
     try {
+        if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+            return res.status(500).json({
+                success: false,
+                error: 'Razorpay server keys are not configured on backend.',
+            });
+        }
+
         const razorpay = new Razorpay({
             key_id: process.env.RAZORPAY_KEY_ID,
             key_secret: process.env.RAZORPAY_KEY_SECRET,
         });
 
-        const { selectedEventIds, currency } = req.body;
+        const { selectedEventIds, currency, email, phone, name } = req.body;
 
         if (!Array.isArray(selectedEventIds) || selectedEventIds.length === 0) {
             return res.status(400).json({ success: false, error: 'No events selected.' });
@@ -44,6 +51,11 @@ export default async function handler(req, res) {
             amount: totalFee * 100,
             currency: currency || 'INR',
             receipt: 'receipt_' + Date.now(),
+            notes: {
+                email: email || '',
+                phone: phone || '',
+                name: name || '',
+            },
         });
 
         return res.json({

@@ -9,6 +9,10 @@ export default function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
 
     try {
+        if (!process.env.RAZORPAY_KEY_SECRET) {
+            return res.status(500).json({ success: false, message: 'Razorpay key secret is not configured on backend.' });
+        }
+
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {

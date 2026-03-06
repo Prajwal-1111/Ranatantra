@@ -8,7 +8,11 @@ export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '967099
 
 // Razorpay & Backend Config
 export const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SMPLH5DFYeMquJ';
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.ranatantra.online');
+export const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL ||
+  (window.location.hostname === 'localhost' || window.location.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)
+    ? `http://${window.location.hostname}:5000`
+    : 'https://api.ranatantra.online');
 
 // Only these Google accounts can access the Admin page.
 export const DEFAULT_KEYWORDS =
