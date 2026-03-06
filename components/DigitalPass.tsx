@@ -58,8 +58,11 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                 onclone: (clonedDoc) => {
                     const clonedPass = clonedDoc.querySelector('.pass-capture-area') as HTMLElement;
                     if (clonedPass) {
+                        // Force a fixed width for the capture to ensure layout stability
+                        clonedPass.style.width = '380px';
                         clonedPass.style.transform = 'none';
                         clonedPass.style.boxShadow = 'none';
+                        clonedPass.style.position = 'relative';
 
                         // 1. Hide problematic glows
                         const toHide = clonedPass.querySelectorAll('.pass-hide-on-capture');
@@ -72,12 +75,22 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                             g.style.filter = 'none';
                         });
 
-                        // 3. Fix QR Canvas (Pixel transfer)
+                        // 3. Fix Images (Ensure they are sized correctly)
+                        const jgiLogo = clonedPass.querySelector('img[alt="JGI Logo"]') as HTMLElement;
+                        if (jgiLogo) {
+                            jgiLogo.style.height = '40px';
+                            jgiLogo.style.width = 'auto';
+                        }
+
+                        // 4. Fix QR Canvas (Pixel transfer)
                         const originalCanvases = passRef.current!.querySelectorAll('canvas');
                         const clonedCanvases = clonedPass.querySelectorAll('canvas');
                         originalCanvases.forEach((orig, idx) => {
                             const cloned = clonedCanvases[idx] as HTMLCanvasElement;
                             if (cloned) {
+                                // Important: Match dimensions before drawing
+                                cloned.width = orig.width;
+                                cloned.height = orig.height;
                                 const ctx = cloned.getContext('2d');
                                 if (ctx) ctx.drawImage(orig, 0, 0);
                             }
