@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { EVENTS, GOOGLE_CLIENT_ID, MBA_EVENT_TITLES, BACKEND_URL, RAZORPAY_KEY } from '../constants';
 import { useLocation } from 'react-router-dom';
 
@@ -9,6 +9,14 @@ import { CheckCircle, AlertCircle, Loader2, Sparkles, User, LogOut, Users, Uploa
 
 // Declare google global for TypeScript
 declare const google: any;
+
+type PreparedCollegeIdFile = {
+  base64: string;
+  fileName: string;
+  contentType: string;
+};
+
+type RegistrationSyncState = 'idle' | 'syncing' | 'completed' | 'delayed';
 
 const ensureRazorpayLoaded = async (): Promise<void> => {
   if ((window as any).Razorpay) return;
@@ -30,6 +38,23 @@ const ensureRazorpayLoaded = async (): Promise<void> => {
     document.body.appendChild(script);
   });
 };
+
+const readCollegeIdFile = (file: File): Promise<PreparedCollegeIdFile> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve({
+        base64: result.split(',')[1],
+        fileName: file.name,
+        contentType: file.type
+      });
+    };
+
+    reader.onerror = () => reject(new Error('Failed to read college ID file.'));
+    reader.readAsDataURL(file);
+  });
 
 const Register: React.FC = () => {
   const location = useLocation();
@@ -57,7 +82,10 @@ const Register: React.FC = () => {
   const [generatedRegId, setGeneratedRegId] = useState<string>('');
   const [loadingRegisteredEvents, setLoadingRegisteredEvents] = useState(false);
   const [collegeIdFile, setCollegeIdFile] = useState<File | null>(null);
-  const [fileBase64, setFileBase64] = useState<{ base64: string; fileName: string; contentType: string } | null>(null);
+  const [fileBase64, setFileBase64] = useState<PreparedCollegeIdFile | null>(null);
+  const [registrationSyncState, setRegistrationSyncState] = useState<RegistrationSyncState>('idle');
+  const [lastPaymentId, setLastPaymentId] = useState('');
+  const paymentHandledRef = useRef(false);
 
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
@@ -127,6 +155,10 @@ const Register: React.FC = () => {
     setUserProfilePicture('');
     setMessage('');
     setLoadingRegisteredEvents(false);
+    setRegistrationSyncState('idle');
+    setGeneratedRegId('');
+    setLastPaymentId('');
+    paymentHandledRef.current = false;
     clearAuthToken();
     setCurrentStep(1);
   };
@@ -213,17 +245,16 @@ const Register: React.FC = () => {
       }
 
       setCollegeIdFile(file);
-      // Pre-process file to Base64 to save time later
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        setFileBase64({
-          base64: result.split(',')[1],
-          fileName: file.name,
-          contentType: file.type
-        });
-      };
-      reader.readAsDataURL(file);
+      try {
+        setFileBase64(await readCollegeIdFile(file));
+      } catch (error: any) {
+        setCollegeIdFile(null);
+        setFileBase64(null);
+        e.target.value = '';
+        setMessage(error.message || 'Failed to process the uploaded file.');
+        setStatus('error');
+        return;
+      }
     } else {
       setCollegeIdFile(null);
       setFileBase64(null);
@@ -248,6 +279,9 @@ const Register: React.FC = () => {
   const processRegistration = async () => {
     const uniqueId = `MBA-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     setGeneratedRegId(uniqueId);
+    setRegistrationSyncState('idle');
+    setLastPaymentId('');
+    paymentHandledRef.current = false;
 
     setStatus('submitting');
     setMessage('Connecting to Gateway...');
@@ -286,6 +320,7 @@ const Register: React.FC = () => {
         order_id: orderData.order_id,
         handler: async (response: any) => {
           try {
+            paymentHandledRef.current = true;
             setMessage('Verifying Payment...');
             const verifyRes = await fetch(`${BACKEND_URL}/api/verify-payment`, {
               method: 'POST',
@@ -302,8 +337,11 @@ const Register: React.FC = () => {
               throw new Error('Payment verification failed.');
             }
 
-            setMessage('Finalizing Registration...');
-            await finalizeGoogleRegistration(response.razorpay_payment_id, uniqueId);
+            setLastPaymentId(response.razorpay_payment_id);
+            setStatus('success');
+            setRegistrationSyncState('syncing');
+            setMessage('Payment successful. Your registration ID is ready below while we finish syncing your team details.');
+            void finalizeGoogleRegistration(response.razorpay_payment_id, uniqueId);
           } catch (err: any) {
             setStatus('error');
             setMessage(err.message || 'Payment verification failed.');
@@ -317,6 +355,7 @@ const Register: React.FC = () => {
         theme: { color: "#ff0055" },
         modal: {
           ondismiss: () => {
+            if (paymentHandledRef.current) return;
             setStatus('idle');
             setMessage('Payment cancelled.');
           }
@@ -324,6 +363,15 @@ const Register: React.FC = () => {
       };
 
       const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', (response: any) => {
+        paymentHandledRef.current = true;
+        setStatus('error');
+        setMessage(
+          response?.error?.description ||
+          response?.error?.reason ||
+          'Payment failed. Please try again.'
+        );
+      });
       rzp.open();
 
     } catch (error: any) {
@@ -334,19 +382,25 @@ const Register: React.FC = () => {
 
   const finalizeGoogleRegistration = async (paymentId: string, uniqueId: string) => {
     try {
+      let preparedFile = fileBase64;
+
+      if (!preparedFile && collegeIdFile) {
+        preparedFile = await readCollegeIdFile(collegeIdFile);
+        setFileBase64(preparedFile);
+      }
+
       const payload: any = {
         ...formData,
         registrationId: uniqueId,
-        collegeIdFile: fileBase64,
+        collegeIdFile: preparedFile,
         razorpayPaymentId: paymentId
       };
 
-      setMessage('Syncing with Server...');
       const response = await submitRegistration(payload);
 
       if (response.status === 'success') {
-        setStatus('success');
-        setMessage('Registration Confirmed! Your Digital Pass is Ready.');
+        setRegistrationSyncState('completed');
+        setMessage('Payment successful and registration confirmed. Your digital pass will be available shortly.');
 
         setFormData(prev => ({
           ...prev,
@@ -365,14 +419,14 @@ const Register: React.FC = () => {
         }));
         setCollegeIdFile(null);
         setFileBase64(null);
-        fetchRegisteredEvents(formData.email, true);
+        void fetchRegisteredEvents(formData.email, true);
       } else {
-        setStatus('error');
-        setMessage(response.message || 'Registration failed.');
+        setRegistrationSyncState('delayed');
+        setMessage(response.message || `Payment successful. Registration sync is taking longer than expected. Keep this Payment ID safe: ${paymentId}`);
       }
     } catch (error) {
-      setStatus('error');
-      setMessage('Registration failed after payment. Please contact support with Payment ID: ' + paymentId);
+      setRegistrationSyncState('delayed');
+      setMessage('Payment successful. Registration sync is still pending. Please keep this Payment ID safe: ' + paymentId);
     }
   };
 
@@ -427,7 +481,9 @@ const Register: React.FC = () => {
         {status === 'success' ? (
           <div className="bg-green-500/10 border border-green-500/50 rounded-xl p-6 sm:p-8 text-center animate-fade-in">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">Success!</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              {registrationSyncState === 'syncing' ? 'Payment Received' : 'Success!'}
+            </h2>
             <p className="text-gray-300 mb-6 text-sm">{message}</p>
 
             {generatedRegId && (
@@ -442,15 +498,46 @@ const Register: React.FC = () => {
               </div>
             )}
 
-            <button
-              onClick={() => {
-                setStatus('idle');
-                setCurrentStep(1);
-              }}
-              className="w-full py-4 bg-primary text-white rounded-lg font-bold tracking-widest hover:bg-white hover:text-primary transition-colors"
-            >
-              REGISTER ANOTHER TEAM
-            </button>
+            {lastPaymentId && (
+              <div className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 mb-6">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Payment ID</p>
+                <p className="text-sm font-mono text-secondary break-all">{lastPaymentId}</p>
+              </div>
+            )}
+
+            {registrationSyncState === 'syncing' && (
+              <div className="flex items-center justify-center gap-3 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 mb-6 text-left">
+                <Loader2 className="w-4 h-4 text-primary animate-spin flex-shrink-0" />
+                <p className="text-xs text-gray-300">
+                  Final registration sync is still running. Keep this page open for a few seconds.
+                </p>
+              </div>
+            )}
+
+            {registrationSyncState === 'delayed' && (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 mb-6 text-left">
+                <p className="text-xs text-yellow-200">
+                  Payment is already received. If confirmation email or dashboard entry does not appear soon, contact support with the Payment ID above.
+                </p>
+              </div>
+            )}
+
+            {registrationSyncState !== 'syncing' && (
+              <button
+                onClick={() => {
+                  setStatus('idle');
+                  setCurrentStep(1);
+                  setRegistrationSyncState('idle');
+                  setMessage('');
+                  setGeneratedRegId('');
+                  setLastPaymentId('');
+                  paymentHandledRef.current = false;
+                }}
+                className="w-full py-4 bg-primary text-white rounded-lg font-bold tracking-widest hover:bg-white hover:text-primary transition-colors"
+              >
+                REGISTER ANOTHER TEAM
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-6">
