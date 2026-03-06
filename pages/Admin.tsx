@@ -5,6 +5,7 @@ import { clearAuthToken, getAuthUserFromToken, getStoredAuthUser, persistAuthTok
 import { AlertCircle, Loader2, LogOut, Shield, Users, RefreshCcw, Download, DollarSign, TrendingUp, UserCheck, CreditCard, Filter, Search, ChevronDown } from 'lucide-react';
 import type { AdminRegistrationRecord } from '../types';
 import { AdminSkeleton } from '../components/Skeleton';
+import AdminAnalytics from '../components/AdminAnalytics';
 
 declare const google: any;
 
@@ -17,6 +18,7 @@ const Admin: React.FC = () => {
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
   const [eventFilter, setEventFilter] = useState('all');
+  const [activeView, setActiveView] = useState<'table' | 'analytics'>('analytics');
 
   const isAuthorized = !!user && normalizedAllowedEmails.includes((user.email || '').toLowerCase());
 
@@ -288,199 +290,220 @@ const Admin: React.FC = () => {
               </div>
             )}
 
-            {/* ── Toolbar ── */}
-            <div className="bg-card/50 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                {/* Left: counts + actions */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2 bg-black/40 border border-white/5 px-3 py-2 rounded-xl">
-                    <Users className="w-4 h-4 text-secondary" />
-                    <span className="text-sm font-bold text-white font-mono">{filteredRows.length}</span>
-                    {eventFilter !== 'all' && <span className="text-[10px] text-gray-500 font-semibold">/ {rows.length}</span>}
-                  </div>
-
-                  <button
-                    onClick={handleRefresh}
-                    disabled={loading}
-                    className="p-2.5 bg-black/40 border border-white/10 rounded-xl text-gray-400 hover:text-white hover:border-secondary/40 hover:bg-secondary/5 transition-all duration-300 disabled:opacity-50 group"
-                    title="Refresh"
-                  >
-                    <RefreshCcw className={`w-4 h-4 group-hover:text-secondary transition-colors ${loading ? 'animate-spin' : ''}`} />
-                  </button>
-
-                  <button
-                    onClick={handleExportCSV}
-                    disabled={loading || filteredRows.length === 0}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-500/10 border border-green-500/25 rounded-xl text-green-400 hover:bg-green-500/20 hover:border-green-400/40 hover:shadow-[0_0_15px_rgba(34,197,94,0.15)] transition-all duration-300 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
-                    title="Export CSV"
-                  >
-                    <Download className="w-4 h-4" />
-                    Export CSV
-                  </button>
-                </div>
-
-                {/* Right: filters */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
-                    <select
-                      value={eventFilter}
-                      onChange={(e) => setEventFilter(e.target.value)}
-                      className="w-full sm:w-56 bg-black/40 border border-white/10 rounded-xl pl-9 pr-8 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50 focus:shadow-[0_0_10px_rgba(255,0,85,0.1)] appearance-none transition-all duration-300"
-                    >
-                      <option value="all" className="bg-darker">All Events</option>
-                      {uniqueEvents.map((title) => (
-                        <option key={title} value={title} className="bg-darker">{title}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search name, email, event..."
-                      className="w-full sm:w-72 bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white placeholder:text-gray-600 text-sm focus:outline-none focus:border-primary/50 focus:shadow-[0_0_10px_rgba(255,0,85,0.1)] transition-all duration-300"
-                    />
-                  </div>
-                </div>
-              </div>
+            {/* ── View Toggle ── */}
+            <div className="flex p-1 bg-black/40 backdrop-blur-md border border-white/5 rounded-xl w-fit">
+              <button
+                onClick={() => setActiveView('analytics')}
+                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${activeView === 'analytics' ? 'bg-primary text-white shadow-[0_0_15px_rgba(255,0,85,0.3)]' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                ANALYTICS
+              </button>
+              <button
+                onClick={() => setActiveView('table')}
+                className={`px-6 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${activeView === 'table' ? 'bg-primary text-white shadow-[0_0_15px_rgba(255,0,85,0.3)]' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                DETAILED TABLE
+              </button>
             </div>
 
-            {/* ── Data ── */}
-            <div className="bg-card/30 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.4)]">
-              {loading ? (
-                <AdminSkeleton />
-              ) : filteredRows.length === 0 && !message ? (
-                <div className="flex flex-col items-center justify-center py-24 text-center">
-                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                    <Users className="w-8 h-8 text-gray-600" />
-                  </div>
-                  <p className="text-gray-400 text-sm">No records match your filters.</p>
-                  <button onClick={() => { setSearch(''); setEventFilter('all'); }} className="mt-3 text-xs text-primary hover:text-white transition-colors font-bold">
-                    Clear Filters
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {/* Mobile Cards */}
-                  <div className="space-y-3 p-4 md:hidden custom-scrollbar max-h-[70vh] overflow-y-auto">
-                    {filteredRows.map((row, index) => {
-                      const details = [
-                        { label: 'Phone', value: row.phone },
-                        { label: 'College', value: row.college },
-                        { label: 'Branch', value: row.department },
-                        { label: 'Year', value: row.year },
-                        { label: 'Event Date', value: row.eventDate },
-                        { label: 'Reg ID', value: row.registrationId },
-                        { label: 'Payment ID', value: row.razorpayPaymentId },
-                        { label: 'Timestamp', value: row.timestamp },
-                      ];
+            {activeView === 'analytics' ? (
+              <AdminAnalytics data={filteredRows} />
+            ) : (
+              <>
+                {/* ── Toolbar ── */}
+                <div className="bg-card/50 backdrop-blur-sm border border-white/10 rounded-2xl p-4 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    {/* Left: counts + actions */}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-2 bg-black/40 border border-white/5 px-3 py-2 rounded-xl">
+                        <Users className="w-4 h-4 text-secondary" />
+                        <span className="text-sm font-bold text-white font-mono">{filteredRows.length}</span>
+                        {eventFilter !== 'all' && <span className="text-[10px] text-gray-500 font-semibold">/ {rows.length}</span>}
+                      </div>
 
-                      return (
-                        <article
-                          key={`${row.email}-${row.eventId}-${index}`}
-                          className="rounded-xl border border-white/5 bg-black/30 p-4 hover:border-primary/30 transition-all duration-300"
+                      <button
+                        onClick={handleRefresh}
+                        disabled={loading}
+                        className="p-2.5 bg-black/40 border border-white/10 rounded-xl text-gray-400 hover:text-white hover:border-secondary/40 hover:bg-secondary/5 transition-all duration-300 disabled:opacity-50 group"
+                        title="Refresh"
+                      >
+                        <RefreshCcw className={`w-4 h-4 group-hover:text-secondary transition-colors ${loading ? 'animate-spin' : ''}`} />
+                      </button>
+
+                      <button
+                        onClick={handleExportCSV}
+                        disabled={loading || filteredRows.length === 0}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-500/10 border border-green-500/25 rounded-xl text-green-400 hover:bg-green-500/20 hover:border-green-400/40 hover:shadow-[0_0_15px_rgba(34,197,94,0.15)] transition-all duration-300 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+                        title="Export CSV"
+                      >
+                        <Download className="w-4 h-4" />
+                        Export CSV
+                      </button>
+                    </div>
+
+                    {/* Right: filters */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <div className="relative">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+                        <select
+                          value={eventFilter}
+                          onChange={(e) => setEventFilter(e.target.value)}
+                          className="w-full sm:w-56 bg-black/40 border border-white/10 rounded-xl pl-9 pr-8 py-2.5 text-white text-sm focus:outline-none focus:border-primary/50 focus:shadow-[0_0_10px_rgba(255,0,85,0.1)] appearance-none transition-all duration-300"
                         >
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div className="min-w-0">
-                              <p className="text-sm font-bold text-white">{row.fullName || '-'}</p>
-                              <p className="text-xs text-secondary/80 break-all font-mono">{row.email || '-'}</p>
-                            </div>
-                            <div className="flex flex-col items-end gap-1.5 shrink-0">
-                              <span className="rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
-                                {row.eventTitle || '-'}
-                              </span>
-                              {row.razorpayPaymentId ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 px-2 py-0.5 rounded-lg shadow-[0_0_8px_rgba(34,197,94,0.15)]">
-                                  <CreditCard className="w-3 h-3" /> PAID
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-bold bg-gray-500/15 text-gray-400 border border-gray-500/20 px-2 py-0.5 rounded-lg">FREE</span>
-                              )}
-                            </div>
-                          </div>
-                          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs border-t border-white/5 pt-3">
-                            {details.map((d) => (
-                              <div key={d.label} className="min-w-0">
-                                <dt className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">{d.label}</dt>
-                                <dd className="text-gray-300 break-words mt-0.5">{d.value || '-'}</dd>
-                              </div>
-                            ))}
-                          </dl>
-                        </article>
-                      );
-                    })}
-                  </div>
-
-                  {/* Desktop Table */}
-                  <div className="hidden md:block overflow-x-auto custom-scrollbar">
-                    <table className="min-w-full text-sm">
-                      <thead>
-                        <tr className="bg-black/60 border-b border-white/10">
-                          {['Timestamp', 'Name', 'Email', 'Phone', 'College', 'Dept', 'Year', 'Event', 'Date', 'Reg ID', 'Payment', 'Status'].map((header) => (
-                            <th key={header} className="px-4 py-3.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em]">
-                              {header}
-                            </th>
+                          <option value="all" className="bg-darker">All Events</option>
+                          {uniqueEvents.map((title) => (
+                            <option key={title} value={title} className="bg-darker">{title}</option>
                           ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredRows.map((row, index) => (
-                          <tr
-                            key={`${row.email}-${row.eventId}-${index}`}
-                            className="border-t border-white/[0.03] text-gray-300 hover:bg-white/[0.03] transition-colors duration-200"
-                          >
-                            <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">{row.timestamp || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap font-semibold text-white">{row.fullName || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-secondary/70">{row.email || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap">{row.phone || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap max-w-[140px] truncate" title={row.college}>{row.college || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap">{row.department || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-center">{row.year || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span className="inline-block px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary text-xs font-bold">
-                                {row.eventTitle || '-'}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-xs">{row.eventDate || '-'}</td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span className="font-mono text-xs text-primary/80">{row.registrationId || '-'}</span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              {row.razorpayPaymentId ? (
-                                <a href={`https://dashboard.razorpay.com/app/payments/${row.razorpayPaymentId}`} target="_blank" rel="noopener noreferrer" className="font-mono text-[11px] text-secondary/70 hover:text-secondary transition-colors" title="View on Razorpay">
-                                  {row.razorpayPaymentId} 🔗
-                                </a>
-                              ) : <span className="text-gray-600">-</span>}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              {row.razorpayPaymentId ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 px-2 py-0.5 rounded-lg shadow-[0_0_6px_rgba(34,197,94,0.1)]">
-                                  <CreditCard className="w-3 h-3" /> PAID
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-bold bg-gray-500/15 text-gray-400 border border-gray-500/20 px-2 py-0.5 rounded-lg">FREE</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
+                        </select>
+                      </div>
 
-              {message && (
-                <div className="m-4 flex items-center gap-2 text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <p className="text-sm">{message}</p>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          placeholder="Search name, email, event..."
+                          className="w-full sm:w-72 bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white placeholder:text-gray-600 text-sm focus:outline-none focus:border-primary/50 focus:shadow-[0_0_10px_rgba(255,0,85,0.1)] transition-all duration-300"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* ── Data ── */}
+                <div className="bg-card/30 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.4)]">
+                  {loading ? (
+                    <AdminSkeleton />
+                  ) : filteredRows.length === 0 && !message ? (
+                    <div className="flex flex-col items-center justify-center py-24 text-center">
+                      <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                        <Users className="w-8 h-8 text-gray-600" />
+                      </div>
+                      <p className="text-gray-400 text-sm">No records match your filters.</p>
+                      <button onClick={() => { setSearch(''); setEventFilter('all'); }} className="mt-3 text-xs text-primary hover:text-white transition-colors font-bold">
+                        Clear Filters
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Mobile Cards */}
+                      <div className="space-y-3 p-4 md:hidden custom-scrollbar max-h-[70vh] overflow-y-auto">
+                        {filteredRows.map((row, index) => {
+                          const details = [
+                            { label: 'Phone', value: row.phone },
+                            { label: 'College', value: row.college },
+                            { label: 'Branch', value: row.department },
+                            { label: 'Year', value: row.year },
+                            { label: 'Event Date', value: row.eventDate },
+                            { label: 'Reg ID', value: row.registrationId },
+                            { label: 'Payment ID', value: row.razorpayPaymentId },
+                            { label: 'Timestamp', value: row.timestamp },
+                          ];
+
+                          return (
+                            <article
+                              key={`${row.email}-${row.eventId}-${index}`}
+                              className="rounded-xl border border-white/5 bg-black/30 p-4 hover:border-primary/30 transition-all duration-300"
+                            >
+                              <div className="flex items-start justify-between gap-3 mb-3">
+                                <div className="min-w-0">
+                                  <p className="text-sm font-bold text-white">{row.fullName || '-'}</p>
+                                  <p className="text-xs text-secondary/80 break-all font-mono">{row.email || '-'}</p>
+                                </div>
+                                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                  <span className="rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
+                                    {row.eventTitle || '-'}
+                                  </span>
+                                  {row.razorpayPaymentId ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 px-2 py-0.5 rounded-lg shadow-[0_0_8px_rgba(34,197,94,0.15)]">
+                                      <CreditCard className="w-3 h-3" /> PAID
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] font-bold bg-gray-500/15 text-gray-400 border border-gray-500/20 px-2 py-0.5 rounded-lg">FREE</span>
+                                  )}
+                                </div>
+                              </div>
+                              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs border-t border-white/5 pt-3">
+                                {details.map((d) => (
+                                  <div key={d.label} className="min-w-0">
+                                    <dt className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">{d.label}</dt>
+                                    <dd className="text-gray-300 break-words mt-0.5">{d.value || '-'}</dd>
+                                  </div>
+                                ))}
+                              </dl>
+                            </article>
+                          );
+                        })}
+                      </div>
+
+                      {/* Desktop Table */}
+                      <div className="hidden md:block overflow-x-auto custom-scrollbar">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="bg-black/60 border-b border-white/10">
+                              {['Timestamp', 'Name', 'Email', 'Phone', 'College', 'Dept', 'Year', 'Event', 'Date', 'Reg ID', 'Payment', 'Status'].map((header) => (
+                                <th key={header} className="px-4 py-3.5 text-left text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em]">
+                                  {header}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredRows.map((row, index) => (
+                              <tr
+                                key={`${row.email}-${row.eventId}-${index}`}
+                                className="border-t border-white/[0.03] text-gray-300 hover:bg-white/[0.03] transition-colors duration-200"
+                              >
+                                <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">{row.timestamp || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap font-semibold text-white">{row.fullName || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap font-mono text-xs text-secondary/70">{row.email || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">{row.phone || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap max-w-[140px] truncate" title={row.college}>{row.college || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">{row.department || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap text-center">{row.year || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                  <span className="inline-block px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary text-xs font-bold">
+                                    {row.eventTitle || '-'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-xs">{row.eventDate || '-'}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                  <span className="font-mono text-xs text-primary/80">{row.registrationId || '-'}</span>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                  {row.razorpayPaymentId ? (
+                                    <a href={`https://dashboard.razorpay.com/app/payments/${row.razorpayPaymentId}`} target="_blank" rel="noopener noreferrer" className="font-mono text-[11px] text-secondary/70 hover:text-secondary transition-colors" title="View on Razorpay">
+                                      {row.razorpayPaymentId} 🔗
+                                    </a>
+                                  ) : <span className="text-gray-600">-</span>}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                  {row.razorpayPaymentId ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 px-2 py-0.5 rounded-lg shadow-[0_0_6px_rgba(34,197,94,0.1)]">
+                                      <CreditCard className="w-3 h-3" /> PAID
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] font-bold bg-gray-500/15 text-gray-400 border border-gray-500/20 px-2 py-0.5 rounded-lg">FREE</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                  {message && (
+                    <div className="m-4 flex items-center gap-2 text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <p className="text-sm">{message}</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
