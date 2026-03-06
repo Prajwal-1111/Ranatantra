@@ -29,8 +29,9 @@ const ADMIN_ALLOWED_EMAILS = [
   'vishal.ishwar.ponaji@gmail.com'
 ];
 
-// Replace this with your single master Google Sheet ID
 const MASTER_SPREADSHEET_ID = '18_DvVPNHExzkiRZ9MLQCL-NKvxd538BynEeuqj34Jik';
+// Create a folder in Google Drive and paste the ID here
+const REGISTRATIONS_FOLDER_ID = '1LZ0g7sGct4QsU6yp2WzkXqVtaVKhy97r';
 
 const EVENT_ID_TO_TITLE = {
   e1: 'Netrtva Tantra (Best Manager)',
@@ -74,7 +75,7 @@ function doGet(e) {
       const allRows = [];
 
       if (lastRow >= 2) {
-        const rows = sheet.getRange(2, 1, lastRow - 1, 15).getValues();
+        const rows = sheet.getRange(2, 1, lastRow - 1, 16).getValues();
         rows.forEach(function (row) {
           allRows.push({
             timestamp: formatTimestamp_(row[0]),
@@ -92,6 +93,7 @@ function doGet(e) {
             member3Name: normalizeString_(row[12]),
             member4Name: normalizeString_(row[13]),
             accommodationRequired: normalizeString_(row[14]),
+            idFileUrl: normalizeString_(row[15] || ''),
             // For backward compatibility with any admin dashboard logic expecting these
             eventTitle: 'MBA Fest Registration',
             eventDate: EVENT_DATE_LABEL
@@ -212,6 +214,12 @@ function doPost(e) {
     const paymentId = normalizeString_(data.razorpayPaymentId) || '';
     const paymentLink = paymentId ? 'https://dashboard.razorpay.com/app/payments/' + paymentId : '';
 
+    // Handle File Upload to Google Drive
+    let fileUrl = '';
+    if (data.collegeIdFile && data.collegeIdFile.base64) {
+      fileUrl = saveFileToDrive_(data.collegeIdFile, data.registrationId || data.email);
+    }
+
     const row = [
       new Date(),
       normalizeString_(data.fullName),
@@ -227,7 +235,8 @@ function doPost(e) {
       normalizeString_(data.member2Name),
       normalizeString_(data.member3Name),
       normalizeString_(data.member4Name),
-      normalizeString_(data.accommodationRequired)
+      normalizeString_(data.accommodationRequired),
+      fileUrl // Link to the file in Google Drive
     ];
 
     sheet.getRange(sheet.getLastRow() + 1, 1, 1, row.length).setValues([row]);
@@ -757,5 +766,32 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
     });
   } catch (error) {
     console.log('Email error: ' + error);
+  }
+}
+/**
+ * Saves a base64 encoded file to Google Drive
+ */
+function saveFileToDrive_(fileObj, identifier) {
+  try {
+    let folder;
+    if (REGISTRATIONS_FOLDER_ID) {
+      folder = DriveApp.getFolderById(REGISTRATIONS_FOLDER_ID);
+    } else {
+      // Create a default folder if none specified
+      const folders = DriveApp.getFoldersByName('Ranatantra_Registrations');
+      folder = folders.hasNext() ? folders.next() : DriveApp.createFolder('Ranatantra_Registrations');
+    }
+
+    const blob = Utilities.newBlob(Utilities.base64Decode(fileObj.base64), fileObj.contentType, fileObj.fileName);
+    const newFileName = identifier + '_' + fileObj.fileName;
+    const file = folder.createFile(blob).setName(newFileName);
+
+    // Make file viewable by the administrator/anyone with the link if needed
+    // file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    return file.getUrl();
+  } catch (err) {
+    Logger.log('File Save Error: ' + err.toString());
+    return 'Error saving file: ' + err.toString();
   }
 }
