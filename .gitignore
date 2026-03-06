@@ -28,6 +28,7 @@ backend/orders.json
 backend_log.txt
 *.txt
 !README.md
+!robots.txt
 .env
 .env.local
 .env.*.local
