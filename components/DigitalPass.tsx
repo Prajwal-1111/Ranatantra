@@ -34,33 +34,54 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
         setDownloading(true);
 
         try {
-            // Ensure all images are fully loaded before capturing
+            // Wait for images to load
             const images = passRef.current.querySelectorAll('img');
-            const imagePromises = Array.from(images).map(img => {
+            await Promise.all(Array.from(images).map(img => {
                 if (img.complete) return Promise.resolve();
                 return new Promise((resolve) => {
                     img.onload = resolve;
                     img.onerror = resolve;
                 });
-            });
+            }));
 
-            await Promise.all(imagePromises);
-
-            // Short delay to ensure SVG QR code has stabilized in the DOM
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Wait for QR Canvas to be fully ready
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             const html2canvas = (await import('html2canvas')).default;
             const canvas = await html2canvas(passRef.current, {
                 backgroundColor: '#0a0015',
-                scale: 2, // 2x is plenty for mobile and more stable than 3x
+                scale: 2,
                 useCORS: true,
-                logging: false,
                 allowTaint: true,
+                logging: false,
+                imageTimeout: 0,
                 onclone: (clonedDoc) => {
-                    // Ensure the cloned version is visible for capture
-                    const element = clonedDoc.querySelector('[ref="passRef"]') as HTMLElement;
-                    if (element) {
-                        element.style.transform = 'none';
+                    const clonedPass = clonedDoc.querySelector('.pass-capture-area') as HTMLElement;
+                    if (clonedPass) {
+                        clonedPass.style.transform = 'none';
+                        clonedPass.style.boxShadow = 'none';
+
+                        // 1. Hide problematic glows
+                        const toHide = clonedPass.querySelectorAll('.pass-hide-on-capture');
+                        toHide.forEach((g: any) => g.style.display = 'none');
+
+                        // 2. Clean functional elements
+                        const toClean = clonedPass.querySelectorAll('.pass-clean-on-capture');
+                        toClean.forEach((g: any) => {
+                            g.style.boxShadow = 'none';
+                            g.style.filter = 'none';
+                        });
+
+                        // 3. Fix QR Canvas (Pixel transfer)
+                        const originalCanvases = passRef.current!.querySelectorAll('canvas');
+                        const clonedCanvases = clonedPass.querySelectorAll('canvas');
+                        originalCanvases.forEach((orig, idx) => {
+                            const cloned = clonedCanvases[idx] as HTMLCanvasElement;
+                            if (cloned) {
+                                const ctx = cloned.getContext('2d');
+                                if (ctx) ctx.drawImage(orig, 0, 0);
+                            }
+                        });
                     }
                 }
             });
@@ -130,14 +151,14 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                 </div>
 
                 {/* The Pass Card */}
-                <div ref={passRef} className="bg-gradient-to-br from-[#0a0015] via-[#120024] to-[#0a0015] rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,0,85,0.15)]">
+                <div ref={passRef} className="pass-capture-area bg-gradient-to-br from-[#0a0015] via-[#120024] to-[#0a0015] rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(255,0,85,0.15)]">
                     {/* Top Gradient Bar */}
                     <div className="h-2 bg-gradient-to-r from-primary via-purple-500 to-secondary"></div>
 
                     {/* Header */}
                     <div className="px-6 pt-6 pb-4 text-center relative">
                         {/* Background glow */}
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/10 rounded-full blur-[80px] pointer-events-none"></div>
+                        <div className="pass-hide-on-capture absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/10 rounded-full blur-[80px] pointer-events-none"></div>
 
                         <div className="relative">
                             <div className="flex items-center justify-center gap-3 mb-2">
@@ -172,7 +193,7 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                             <img
                                 src={user.picture}
                                 alt={user.name}
-                                className="w-16 h-16 rounded-2xl border-2 border-primary/50 object-cover shadow-[0_0_20px_rgba(255,0,85,0.3)]"
+                                className="pass-clean-on-capture w-16 h-16 rounded-2xl border-2 border-primary/50 object-cover shadow-[0_0_20px_rgba(255,0,85,0.3)]"
                                 referrerPolicy="no-referrer"
                             />
                             <div className="min-w-0">
@@ -222,7 +243,7 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
 
                     {/* QR Code Section */}
                     <div className="px-6 py-6 text-center">
-                        <div className="bg-white rounded-2xl p-4 inline-block shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                        <div className="pass-clean-on-capture bg-white rounded-2xl p-4 inline-block shadow-[0_0_30px_rgba(255,255,255,0.1)]">
                             <QRCodeCanvas
                                 value={qrData}
                                 size={180}
