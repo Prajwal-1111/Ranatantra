@@ -14,6 +14,7 @@ import QRScanner from './pages/QRScanner';
 import SeoManager from './components/SeoManager';
 import { getStoredAuthUser } from './services/authSession';
 import { getRegistrations } from './services/googleSheets';
+import BootSequence from './components/BootSequence';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -24,6 +25,15 @@ const ScrollToTop = () => {
 };
 
 const App: React.FC = () => {
+  const [hasBooted, setHasBooted] = React.useState(() => {
+    return sessionStorage.getItem('ranatantra_booted') === 'true';
+  });
+
+  const handleBootComplete = () => {
+    sessionStorage.setItem('ranatantra_booted', 'true');
+    setHasBooted(true);
+  };
+
   React.useEffect(() => {
     const storedUser = getStoredAuthUser();
     if (!storedUser?.email) {
@@ -38,6 +48,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      {!hasBooted && <BootSequence onComplete={handleBootComplete} />}
       <SeoManager />
       <ScrollToTop />
       <div className="flex flex-col min-h-screen bg-dark text-white">

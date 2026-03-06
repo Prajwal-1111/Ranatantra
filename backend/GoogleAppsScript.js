@@ -30,7 +30,7 @@ const ADMIN_ALLOWED_EMAILS = [
 ];
 
 // Replace this with your single master Google Sheet ID
-const MASTER_SPREADSHEET_ID = '1_K91Jb4ymleOJKLa5JrX47mhEWJUrg8PLzIBvAhYJb8';
+const MASTER_SPREADSHEET_ID = '18_DvVPNHExzkiRZ9MLQCL-NKvxd538BynEeuqj34Jik';
 
 const EVENT_ID_TO_TITLE = {
   e1: 'Netrtva Tantra (Best Manager)',
