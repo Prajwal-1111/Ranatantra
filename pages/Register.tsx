@@ -217,14 +217,36 @@ const Register: React.FC = () => {
     setMessage('Finalizing your registration...');
 
     try {
+      let fileData: { base64: string; fileName: string; contentType: string } | null = null;
+
+      // Convert file to base64 if exists
+      if (collegeIdFile) {
+        setMessage('Processing IDs...');
+        const reader = new FileReader();
+        fileData = await new Promise((resolve, reject) => {
+          reader.onload = () => {
+            const result = reader.result as string;
+            const base64 = result.split(',')[1];
+            resolve({
+              base64,
+              fileName: collegeIdFile.name,
+              contentType: collegeIdFile.type
+            });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(collegeIdFile);
+        });
+      }
+
       const payload: any = {
         ...formData,
         registrationId: uniqueId,
-        // We'll simulate passing the payment ID if available, otherwise just use the uniqueId
+        collegeIdFile: fileData, // Include the file data
         razorpayPaymentId: formData.razorpayPaymentId || `SIM-${uniqueId}`
       };
 
       // Start the submission
+      setMessage('Sending data...');
       const response = await submitRegistration(payload);
 
       if (response.status === 'success') {
