@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 backend/.env
+backend/env
 backend/orders.json
 backend_log.txt
 *.txt
