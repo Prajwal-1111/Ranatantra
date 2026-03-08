@@ -48,7 +48,7 @@ export default async function handler(req, res) {
             order_id: orderId,
             customer_details: {
                 customer_id: 'cust_' + Date.now(),
-                customer_phone: phone || '9999999999',
+                customer_phone: (phone || '9999999999').replace(/[^0-9+]/g, ''),
                 customer_name: name || 'Ranatantra Participant',
                 customer_email: email || 'participant@ranatantra.online'
             },
