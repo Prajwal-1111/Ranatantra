@@ -26,19 +26,9 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, error: 'No events selected.' });
         }
 
-        let totalFee = 0;
-        const validEvents = [];
-        for (const eventId of selectedEventIds) {
-            const fee = EVENT_FEES[eventId];
-            if (fee !== undefined) {
-                totalFee += fee;
-                validEvents.push(eventId);
-            }
-        }
-
-        if (totalFee <= 0 || validEvents.length === 0) {
-            return res.status(400).json({ success: false, error: 'Invalid events or zero fee.' });
-        }
+        // Flat bundle fee — all events included for ₹1000
+        const totalFee = 1000;
+        const validEvents = selectedEventIds;
 
         const orderId = 'order_' + Date.now() + Math.random().toString(36).substring(2, 6);
 
