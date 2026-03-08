@@ -82,17 +82,20 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                             jgiLogo.style.width = 'auto';
                         }
 
-                        // 4. Fix QR Canvas (Pixel transfer)
+                        // 4. Fix QR Canvas — replace cloned canvas with an img of the original data
                         const originalCanvases = passRef.current!.querySelectorAll('canvas');
                         const clonedCanvases = clonedPass.querySelectorAll('canvas');
                         originalCanvases.forEach((orig, idx) => {
                             const cloned = clonedCanvases[idx] as HTMLCanvasElement;
-                            if (cloned) {
-                                // Important: Match dimensions before drawing
-                                cloned.width = orig.width;
-                                cloned.height = orig.height;
-                                const ctx = cloned.getContext('2d');
-                                if (ctx) ctx.drawImage(orig, 0, 0);
+                            if (cloned && cloned.parentNode) {
+                                const img = clonedDoc.createElement('img');
+                                img.src = orig.toDataURL('image/png');
+                                img.width = orig.width;
+                                img.height = orig.height;
+                                img.style.width = cloned.style.width || `${orig.width}px`;
+                                img.style.height = cloned.style.height || `${orig.height}px`;
+                                img.style.display = 'block';
+                                cloned.parentNode.replaceChild(img, cloned);
                             }
                         });
                     }
