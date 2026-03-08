@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { EVENTS, GOOGLE_CLIENT_ID, MBA_EVENT_TITLES, BACKEND_URL, RAZORPAY_KEY } from '../constants';
+import { EVENTS, GOOGLE_CLIENT_ID, MBA_EVENT_TITLES, BACKEND_URL } from '../constants';
 import { useLocation } from 'react-router-dom';
 
 import { getRegistrations, submitRegistration } from '../services/googleSheets';
@@ -18,23 +18,23 @@ type PreparedCollegeIdFile = {
 
 type RegistrationSyncState = 'idle' | 'syncing' | 'completed' | 'delayed';
 
-const ensureRazorpayLoaded = async (): Promise<void> => {
-  if ((window as any).Razorpay) return;
+const ensureCashfreeLoaded = async (): Promise<void> => {
+  if ((window as any).Cashfree) return;
 
   await new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]') as HTMLScriptElement | null;
+    const existing = document.querySelector('script[src="https://sdk.cashfree.com/js/v3/cashfree.js"]') as HTMLScriptElement | null;
 
     if (existing) {
       existing.addEventListener('load', () => resolve(), { once: true });
-      existing.addEventListener('error', () => reject(new Error('Failed to load Razorpay checkout script.')), { once: true });
+      existing.addEventListener('error', () => reject(new Error('Failed to load Cashfree script.')), { once: true });
       return;
     }
 
     const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Failed to load Razorpay checkout script.'));
+    script.onerror = () => reject(new Error('Failed to load Cashfree script.'));
     document.body.appendChild(script);
   });
 };
@@ -287,11 +287,7 @@ const Register: React.FC = () => {
     setMessage('Connecting to Gateway...');
 
     try {
-      if (!RAZORPAY_KEY) {
-        throw new Error('Razorpay key is missing.');
-      }
-
-      await ensureRazorpayLoaded();
+      await ensureCashfreeLoaded();
 
       const createOrderRes = await fetch(`${BACKEND_URL}/api/create-order`, {
         method: 'POST',
@@ -310,26 +306,26 @@ const Register: React.FC = () => {
         throw new Error(orderData.error || 'Failed to initialize payment.');
       }
 
-      const options = {
-        key: RAZORPAY_KEY,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "Ranatantra 2026",
-        description: "MBA Fest Registration",
-        image: "/logo.png",
-        order_id: orderData.order_id,
-        handler: async (response: any) => {
+      const cashfree = (window as any).Cashfree({ mode: "production" });
+
+      const checkoutOptions = {
+        paymentSessionId: orderData.payment_session_id,
+        redirectTarget: "_modal",
+      };
+
+      cashfree.checkout(checkoutOptions).then(async (result: any) => {
+        if (result.error) {
+          paymentHandledRef.current = true;
+          setStatus('error');
+          setMessage(result.error.message || 'Payment cancelled or failed.');
+        } else if (result.paymentDetails) {
+          paymentHandledRef.current = true;
+          setMessage('Verifying Payment...');
           try {
-            paymentHandledRef.current = true;
-            setMessage('Verifying Payment...');
             const verifyRes = await fetch(`${BACKEND_URL}/api/verify-payment`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
-              })
+              body: JSON.stringify({ order_id: orderData.order_id })
             });
 
             const verifyData = await verifyRes.json();
@@ -337,42 +333,17 @@ const Register: React.FC = () => {
               throw new Error('Payment verification failed.');
             }
 
-            setLastPaymentId(response.razorpay_payment_id);
+            setLastPaymentId(orderData.order_id);
             setStatus('success');
             setRegistrationSyncState('syncing');
             setMessage('Payment successful. Your registration ID is ready below while we finish syncing your team details.');
-            void finalizeGoogleRegistration(response.razorpay_payment_id, uniqueId);
+            void finalizeGoogleRegistration(orderData.order_id, uniqueId);
           } catch (err: any) {
             setStatus('error');
             setMessage(err.message || 'Payment verification failed.');
           }
-        },
-        prefill: {
-          name: formData.fullName,
-          email: formData.email,
-          contact: formData.phone
-        },
-        theme: { color: "#ff0055" },
-        modal: {
-          ondismiss: () => {
-            if (paymentHandledRef.current) return;
-            setStatus('idle');
-            setMessage('Payment cancelled.');
-          }
         }
-      };
-
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on('payment.failed', (response: any) => {
-        paymentHandledRef.current = true;
-        setStatus('error');
-        setMessage(
-          response?.error?.description ||
-          response?.error?.reason ||
-          'Payment failed. Please try again.'
-        );
       });
-      rzp.open();
 
     } catch (error: any) {
       setStatus('error');
@@ -393,7 +364,7 @@ const Register: React.FC = () => {
         ...formData,
         registrationId: uniqueId,
         collegeIdFile: preparedFile,
-        razorpayPaymentId: paymentId
+        paymentId: paymentId
       };
 
       const response = await submitRegistration(payload);

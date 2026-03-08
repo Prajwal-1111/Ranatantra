@@ -237,11 +237,11 @@ const Dashboard: React.FC = () => {
                                                             <span className="text-gray-400 font-mono">{event.registrationId}</span>
                                                         </div>
                                                     )}
-                                                    {event.razorpayPaymentId && (
+                                                    {event.paymentId && (
                                                         <div className="flex items-center text-gray-500 text-xs">
                                                             <CreditCard className="w-3 h-3 mr-1.5 shrink-0" />
-                                                            <a href={`https://dashboard.razorpay.com/app/payments/${event.razorpayPaymentId}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 font-mono truncate hover:text-secondary transition-colors" title="View receipt on Razorpay">
-                                                                {event.razorpayPaymentId} 🔗
+                                                            <a href={`https://dashboard.razorpay.com/app/payments/${event.paymentId}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 font-mono truncate hover:text-secondary transition-colors" title="View receipt on Razorpay">
+                                                                {event.paymentId} 🔗
                                                             </a>
                                                         </div>
                                                     )}

@@ -98,7 +98,7 @@ const Admin: React.FC = () => {
     const query = search.trim().toLowerCase();
     if (query) {
       result = result.filter((row) =>
-        [row.fullName, row.email, row.eventTitle, row.college, row.department, row.registrationId, row.razorpayPaymentId]
+        [row.fullName, row.email, row.eventTitle, row.college, row.department, row.registrationId, row.paymentId]
           .join(' ').toLowerCase().includes(query)
       );
     }
@@ -109,10 +109,10 @@ const Admin: React.FC = () => {
   const stats = useMemo(() => {
     const total = filteredRows.length;
     const unique = new Set(filteredRows.map((r) => (r.email || '').toLowerCase())).size;
-    const paid = filteredRows.filter((r) => !!r.razorpayPaymentId).length;
+    const paid = filteredRows.filter((r) => !!r.paymentId).length;
     const revenue = filteredRows.reduce((sum, row) => {
       const ev = EVENTS.find((e) => e.title === row.eventTitle);
-      return row.razorpayPaymentId && ev?.fee ? sum + ev.fee : sum;
+      return row.paymentId && ev?.fee ? sum + ev.fee : sum;
     }, 0);
     const eventCounts: Record<string, number> = {};
     filteredRows.forEach((r) => { if (r.eventTitle) eventCounts[r.eventTitle] = (eventCounts[r.eventTitle] || 0) + 1; });
@@ -136,8 +136,8 @@ const Admin: React.FC = () => {
         `"${(row.eventTitle || '').replace(/"/g, '""')}"`,
         `"${(row.eventDate || '').replace(/"/g, '""')}"`,
         `"${(row.registrationId || '').replace(/"/g, '""')}"`,
-        `"${(row.razorpayPaymentId || '').replace(/"/g, '""')}"`,
-        row.razorpayPaymentId ? 'PAID' : 'FREE',
+        `"${(row.paymentId || '').replace(/"/g, '""')}"`,
+        row.paymentId ? 'PAID' : 'FREE',
       ].join(',')),
     ];
     const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -398,7 +398,7 @@ const Admin: React.FC = () => {
                             { label: 'Year', value: row.year },
                             { label: 'Event Date', value: row.eventDate },
                             { label: 'Reg ID', value: row.registrationId },
-                            { label: 'Payment ID', value: row.razorpayPaymentId },
+                            { label: 'Payment ID', value: row.paymentId },
                             { label: 'Timestamp', value: row.timestamp },
                           ];
 
@@ -416,7 +416,7 @@ const Admin: React.FC = () => {
                                   <span className="rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
                                     {row.eventTitle || '-'}
                                   </span>
-                                  {row.razorpayPaymentId ? (
+                                  {row.paymentId ? (
                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 px-2 py-0.5 rounded-lg shadow-[0_0_8px_rgba(34,197,94,0.15)]">
                                       <CreditCard className="w-3 h-3" /> PAID
                                     </span>
@@ -473,14 +473,14 @@ const Admin: React.FC = () => {
                                   <span className="font-mono text-xs text-primary/80">{row.registrationId || '-'}</span>
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap">
-                                  {row.razorpayPaymentId ? (
-                                    <a href={`https://dashboard.razorpay.com/app/payments/${row.razorpayPaymentId}`} target="_blank" rel="noopener noreferrer" className="font-mono text-[11px] text-secondary/70 hover:text-secondary transition-colors" title="View on Razorpay">
-                                      {row.razorpayPaymentId} 🔗
+                                  {row.paymentId ? (
+                                    <a href={`https://dashboard.razorpay.com/app/payments/${row.paymentId}`} target="_blank" rel="noopener noreferrer" className="font-mono text-[11px] text-secondary/70 hover:text-secondary transition-colors" title="View on Razorpay">
+                                      {row.paymentId} 🔗
                                     </a>
                                   ) : <span className="text-gray-600">-</span>}
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap">
-                                  {row.razorpayPaymentId ? (
+                                  {row.paymentId ? (
                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 px-2 py-0.5 rounded-lg shadow-[0_0_6px_rgba(34,197,94,0.1)]">
                                       <CreditCard className="w-3 h-3" /> PAID
                                     </span>

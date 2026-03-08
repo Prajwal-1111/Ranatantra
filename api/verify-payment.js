@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,26 +9,34 @@ export default function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
 
     try {
-        if (!process.env.RAZORPAY_KEY_SECRET) {
-            return res.status(500).json({ success: false, message: 'Razorpay key secret is not configured on backend.' });
+        const appId = process.env.CASHFREE_APP_ID;
+        const secretKey = process.env.CASHFREE_SECRET_KEY;
+
+        if (!appId || !secretKey) {
+            return res.status(500).json({ success: false, message: 'Payment gateway not configured.' });
         }
 
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const { order_id } = req.body;
 
-        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-            return res.status(400).json({ success: false, message: 'Missing payment details' });
+        if (!order_id) {
+            return res.status(400).json({ success: false, message: 'Missing order_id' });
         }
 
-        const body = razorpay_order_id + '|' + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-            .update(body)
-            .digest('hex');
+        const response = await fetch(`https://api.cashfree.com/pg/orders/${order_id}`, {
+            method: 'GET',
+            headers: {
+                'x-api-version': '2023-08-01',
+                'x-client-id': appId,
+                'x-client-secret': secretKey
+            }
+        });
 
-        if (expectedSignature === razorpay_signature) {
+        const data = await response.json();
+
+        if (response.ok && data.order_status === 'PAID') {
             return res.json({ success: true, message: 'Payment verified successfully' });
         } else {
-            return res.status(400).json({ success: false, message: 'Invalid payment signature!' });
+            return res.status(400).json({ success: false, message: 'Payment not completed or failed!', status: data.order_status });
         }
     } catch (error) {
         console.error('Verification Error:', error);

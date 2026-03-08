@@ -6,12 +6,11 @@ export const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZ3u_
 // Replace with your Google Cloud Client ID (for Google Sign-In)
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '967099015304-3at146naslvniojgrhirrjv04bpb50lo.apps.googleusercontent.com';
 
-// Razorpay & Backend Config
-export const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SMPLH5DFYeMquJ';
+// Backend Config — on localhost, use empty string so the Vite proxy forwards /api to port 5000
 export const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL ||
   (window.location.hostname === 'localhost' || window.location.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)
-    ? `http://${window.location.hostname}:5000`
+    ? ''
     : 'https://api.ranatantra.online');
 
 // Only these Google accounts can access the Admin page.

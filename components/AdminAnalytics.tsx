@@ -19,10 +19,10 @@ const AdminAnalytics: React.FC<AdminAnalyticsProps> = ({ data }) => {
     const stats = useMemo(() => {
         const total = data.length;
         const uniqueParticipants = new Set(data.map(r => r.email.toLowerCase())).size;
-        const paidRegistrations = data.filter(r => !!r.razorpayPaymentId).length;
+        const paidRegistrations = data.filter(r => !!r.paymentId).length;
         const totalRevenue = data.reduce((sum, row) => {
             const ev = EVENTS.find(e => e.title === row.eventTitle);
-            return row.razorpayPaymentId && ev?.fee ? sum + ev.fee : sum;
+            return row.paymentId && ev?.fee ? sum + ev.fee : sum;
         }, 0);
 
         return { total, uniqueParticipants, paidRegistrations, totalRevenue };

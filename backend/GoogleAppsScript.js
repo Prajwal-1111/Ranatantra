@@ -85,7 +85,7 @@ function doGet(e) {
             college: normalizeString_(row[4]),
             year: normalizeString_(row[5]),
             registrationId: normalizeString_(row[6]),
-            razorpayPaymentId: normalizeString_(row[7]),
+            paymentId: normalizeString_(row[7]),
             paymentLink: normalizeString_(row[8]),
             teamName: normalizeString_(row[9]),
             member1Name: normalizeString_(row[10]),
@@ -222,8 +222,8 @@ function doPost(e) {
       });
     }
 
-    const paymentId = normalizeString_(data.razorpayPaymentId) || '';
-    const paymentLink = paymentId ? 'https://dashboard.razorpay.com/app/payments/' + paymentId : '';
+    const paymentId = normalizeString_(data.paymentId) || '';
+    const paymentLink = paymentId ? 'https://merchant.cashfree.com/merchant/pg/orders/' + paymentId : '';
 
     // Handle File Upload to Google Drive (Slow operation)
     let fileUrl = '';
@@ -580,7 +580,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
 
     const fullName = normalizeString_(data.fullName) || 'Participant';
     const regId = normalizeString_(data.registrationId) || '';
-    const paymentId = normalizeString_(data.razorpayPaymentId) || '';
+    const paymentId = normalizeString_(data.paymentId) || '';
     const phone = normalizeString_(data.phone) || '';
     const college = normalizeString_(data.college) || '';
 
@@ -628,7 +628,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
       infoRowsHtml += '<tr>'
         + '<td style="padding:10px 16px;font-size:13px;color:#999;font-family:\'Segoe UI\',Arial,sans-serif;border-bottom:1px solid rgba(255,255,255,0.05);">Payment ID</td>'
         + '<td style="padding:10px 16px;font-size:13px;color:#22c55e;font-weight:600;font-family:\'Courier New\',monospace;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;">'
-        + '<a href="https://dashboard.razorpay.com/app/payments/' + paymentId + '" style="color:#22c55e;text-decoration:none;">' + paymentId + ' 🔗</a>'
+        + '<a href="https://merchant.cashfree.com/merchant/pg/orders/' + paymentId + '" style="color:#22c55e;text-decoration:none;">' + paymentId + ' 🔗</a>'
         + '</td>'
         + '</tr>';
     }

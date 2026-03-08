@@ -21,7 +21,7 @@ export interface RegistrationFormData {
   department: string;
   year: string;
   selectedEvents: string[];
-  razorpayPaymentId?: string; // Optional field for payment ID
+  paymentId?: string; // Optional field for payment ID
   teamName?: string;
   member1Name?: string;
   member2Name?: string;
@@ -48,5 +48,5 @@ export interface AdminRegistrationRecord {
   eventId: string;
   eventDate: string;
   registrationId?: string;
-  razorpayPaymentId?: string;
+  paymentId?: string;
 }

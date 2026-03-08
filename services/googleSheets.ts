@@ -11,7 +11,7 @@ const SIMULATED_DB: RegistrationFormData[] = [
     department: "Computer Science",
     year: "3",
     selectedEvents: ["Project Pitch Day", "Code Debugging"],
-    razorpayPaymentId: "pay_xyz_test123"
+    paymentId: "pay_xyz_test123"
   },
   {
     fullName: "Srujan Mirji",
@@ -21,7 +21,7 @@ const SIMULATED_DB: RegistrationFormData[] = [
     department: "Information Science",
     year: "3",
     selectedEvents: ["BGMI Tournament", "Treasure Hunt"],
-    razorpayPaymentId: "pay_abc_test456"
+    paymentId: "pay_abc_test456"
   },
   {
     fullName: "Test User",
@@ -31,7 +31,7 @@ const SIMULATED_DB: RegistrationFormData[] = [
     department: "Mechanical",
     year: "1",
     selectedEvents: ["Robo Wars", "Tech Quiz"],
-    razorpayPaymentId: "pay_def_test789"
+    paymentId: "pay_def_test789"
   }
 ];
 const USER_REGISTRATIONS_CACHE_PREFIX = 'user_registrations_cache:';

@@ -1,29 +1,25 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: './backend/.env' });
 import express from 'express';
-import Razorpay from 'razorpay';
-import crypto from 'crypto';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 const app = express();
-app.use(express.json());
+// Keep raw body for webhook verification if needed
+app.use(express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf.toString();
+    }
+}));
 app.use(cors());
 
-// Simple request logger
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
     next();
 });
 
-// Initialize Razorpay
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-// Persistent JSON database to store Orders
 const DB_FILE = path.resolve('./backend/orders.json');
 let ordersDB = {};
 try {
@@ -42,20 +38,12 @@ const saveDB = () => {
     }
 };
 
-// Server-side event fee map (single source of truth for pricing)
-const EVENT_FEES = {
-    e1: 1, e2: 1, e3: 1,
-};
+const EVENT_FEES = { e1: 1, e2: 1, e3: 1 };
 
-/**
- * 1. CREATE ORDER
- * Calculates the amount server-side from selected event IDs to prevent tampering.
- */
 app.post('/api/create-order', async (req, res) => {
     try {
         const { selectedEventIds, currency, email, phone, name } = req.body;
 
-        // Validate event IDs and calculate total fee server-side
         if (!Array.isArray(selectedEventIds) || selectedEventIds.length === 0) {
             return res.status(400).json({ success: false, error: 'No events selected.' });
         }
@@ -74,19 +62,46 @@ app.post('/api/create-order', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Invalid events or zero fee.' });
         }
 
-        const orderOptions = {
-            amount: totalFee * 100, // Amount in paise
-            currency: currency || 'INR',
-            receipt: `receipt_${Date.now()}`,
+        const orderId = 'order_' + Date.now() + Math.random().toString(36).substring(2, 6);
+        const appId = process.env.CASHFREE_APP_ID;
+        const secretKey = process.env.CASHFREE_SECRET_KEY;
+
+        const payload = {
+            order_amount: totalFee,
+            order_currency: currency || 'INR',
+            order_id: orderId,
+            customer_details: {
+                customer_id: 'cust_' + Date.now(),
+                customer_phone: phone || '9999999999',
+                customer_name: name || 'Participant',
+                customer_email: email || 'participant@example.com'
+            },
+            order_meta: {
+                return_url: `https://ranatantra.online/payment-status?order_id={order_id}`
+            }
         };
 
-        const order = await razorpay.orders.create(orderOptions);
+        const response = await fetch('https://api.cashfree.com/pg/orders', {
+            method: 'POST',
+            headers: {
+                'x-api-version': '2023-08-01',
+                'x-client-id': appId,
+                'x-client-secret': secretKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
 
-        // Save order to DB
-        ordersDB[order.id] = {
-            orderId: order.id,
-            amount: order.amount,
-            currency: order.currency,
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to create Cashfree order');
+        }
+
+        ordersDB[orderId] = {
+            orderId: orderId,
+            amount: totalFee,
+            currency: currency || 'INR',
             status: 'CREATED',
             selectedEvents: validEvents,
             customerDetails: { email, phone, name }
@@ -95,10 +110,10 @@ app.post('/api/create-order', async (req, res) => {
 
         res.json({
             success: true,
-            order_id: order.id,
-            amount: order.amount,
-            currency: order.currency,
-            calculatedFee: totalFee
+            order_id: orderId,
+            payment_session_id: data.payment_session_id,
+            amount: totalFee,
+            currency: data.order_currency
         });
     } catch (error) {
         console.error("Order Creation Error:", error);
@@ -106,87 +121,74 @@ app.post('/api/create-order', async (req, res) => {
     }
 });
 
-/**
- * 2. VERIFY PAYMENT (Frontend Callback)
- * After Razorpay popup returns success, the frontend calls this securely.
- */
-app.post('/api/verify-payment', (req, res) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+app.post('/api/verify-payment', async (req, res) => {
+    try {
+        const { order_id } = req.body;
+        const order = ordersDB[order_id];
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
 
-    // Find the exact order we logged previously
-    const order = ordersDB[razorpay_order_id];
-    if (!order) {
-        return res.status(404).json({ success: false, message: 'Order not found' });
-    }
+        const appId = process.env.CASHFREE_APP_ID;
+        const secretKey = process.env.CASHFREE_SECRET_KEY;
 
-    // Cryptographically verify the signature
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-        .update(body.toString())
-        .digest('hex');
+        const response = await fetch(`https://api.cashfree.com/pg/orders/${order_id}`, {
+            headers: {
+                'x-api-version': '2023-08-01',
+                'x-client-id': appId,
+                'x-client-secret': secretKey
+            }
+        });
 
-    const isAuthentic = expectedSignature === razorpay_signature;
+        const data = await response.json();
 
-    if (isAuthentic) {
-        // Payment is verified!
-        order.status = 'PAID';
-        order.paymentId = razorpay_payment_id;
-        saveDB();
-
-        // TODO: Send automatic Email Invoice here via a mailer like Nodemailer
-
-        res.json({ success: true, message: 'Payment verified successfully' });
-    } else {
-        order.status = 'FAILED_VERIFICATION';
-        saveDB();
-        res.status(400).json({ success: false, message: 'Invalid payment signature!' });
+        if (response.ok && data.order_status === 'PAID') {
+            order.status = 'PAID';
+            order.paymentId = order_id;
+            saveDB();
+            return res.json({ success: true, message: 'Payment verified successfully' });
+        } else {
+            order.status = 'FAILED_VERIFICATION';
+            saveDB();
+            return res.status(400).json({ success: false, message: 'Payment not completed or failed!' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Verification failed: ' + error.message });
     }
 });
 
-/**
- * 3. WEBHOOK RECEIVER (Absolute source of truth)
- * Listens for Razorpay's direct server-to-server pings.
- */
-app.post('/api/webhook/razorpay', (req, res) => {
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-    const signature = req.headers['x-razorpay-signature'];
+app.post('/api/webhook/cashfree', (req, res) => {
+    try {
+        const ts = req.headers["x-webhook-timestamp"];
+        const signature = req.headers["x-webhook-signature"];
+        const secretKey = process.env.CASHFREE_SECRET_KEY;
 
-    // Verify Webhook Signature
-    const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(JSON.stringify(req.body))
-        .digest('hex');
+        const expectedSignature = crypto.createHmac('sha256', secretKey)
+            .update(ts + req.rawBody)
+            .digest('base64');
 
-    if (expectedSignature === signature) {
-        const event = req.body.event;
-        const paymentEntity = req.body.payload.payment.entity;
-        const orderId = paymentEntity.order_id;
+        if (expectedSignature === signature) {
+            const event = req.body.type;
+            const orderId = req.body.data?.order?.order_id;
+            const order = ordersDB[orderId];
 
-        // Idempotency: Always find the active order in our database
-        const order = ordersDB[orderId];
-
-        if (order) {
-            if (event === 'payment.captured') {
-                order.status = 'PAID';
-                order.paymentId = paymentEntity.id;
-                console.log(`Webhook: Order ${orderId} PAID successfully.`);
-                saveDB();
-                // TODO: Generate Invoice
+            if (order) {
+                if (event === 'PAYMENT_SUCCESS_WEBHOOK') {
+                    order.status = 'PAID';
+                    saveDB();
+                } else if (event === 'PAYMENT_FAILED_WEBHOOK') {
+                    order.status = 'FAILED';
+                    saveDB();
+                }
             }
-            else if (event === 'payment.failed') {
-                order.status = 'FAILED';
-                order.failureReason = paymentEntity.error_description;
-                console.log(`Webhook: Order ${orderId} FAILED. Reason: ${order.failureReason}`);
-                saveDB();
-            }
+            res.status(200).send('OK');
+        } else {
+            res.status(400).send('Invalid signature');
         }
-        // Always return 200 OK so Razorpay knows we received it
-        res.status(200).json({ status: 'ok' });
-    } else {
-        res.status(400).json({ error: 'Invalid webhook signature' });
+    } catch (e) {
+        res.status(500).send('Error processing webhook');
     }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Backend Sever running aggressively on port ${PORT}`));
+app.listen(PORT, () => console.log(`Backend Server running on port ${PORT}`));
