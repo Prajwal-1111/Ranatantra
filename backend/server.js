@@ -38,7 +38,7 @@ const saveDB = () => {
     }
 };
 
-const EVENT_FEES = { e1: 1, e2: 1, e3: 1 };
+const EVENT_FEES = { e1: 1000, e2: 1000, e3: 1000 };
 
 app.post('/api/create-order', async (req, res) => {
     try {

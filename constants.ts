@@ -36,7 +36,7 @@ export const EVENTS: EventDetails[] = [
     image: 'https://loremflickr.com/800/600/business,leadership',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   },
   {
@@ -50,7 +50,7 @@ export const EVENTS: EventDetails[] = [
     image: 'https://loremflickr.com/800/600/marketing,advertising',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   },
   {
@@ -64,7 +64,7 @@ export const EVENTS: EventDetails[] = [
     image: 'https://loremflickr.com/800/600/finance,money',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   }
 ];
