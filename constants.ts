@@ -6,12 +6,8 @@ export const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZ3u_
 // Replace with your Google Cloud Client ID (for Google Sign-In)
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '967099015304-3at146naslvniojgrhirrjv04bpb50lo.apps.googleusercontent.com';
 
-// Backend Config — on localhost, use empty string so the Vite proxy forwards /api to port 5000
-export const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL ||
-  (window.location.hostname === 'localhost' || window.location.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)
-    ? ''
-    : 'https://api.ranatantra.online');
+// Backend Config — empty string means API calls go to same origin (/api/*)
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 // Only these Google accounts can access the Admin page.
 export const DEFAULT_KEYWORDS =
