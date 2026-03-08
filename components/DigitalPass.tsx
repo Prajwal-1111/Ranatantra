@@ -44,8 +44,27 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                 });
             }));
 
-            // Wait for QR Canvas to be fully ready
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // 4. Fix QR Canvas — replace canvas with an img temporarily in the real DOM
+            // html2canvas struggles with canvas/img loading inside onclone.
+            // By doing it in the real DOM before calling html2canvas, it works reliably.
+            const originalCanvases = passRef.current.querySelectorAll('canvas');
+            const placeholderImgs: HTMLImageElement[] = [];
+
+            originalCanvases.forEach(orig => {
+                const img = document.createElement('img');
+                img.src = orig.toDataURL('image/png');
+                img.width = orig.width;
+                img.height = orig.height;
+                img.style.width = orig.style.width || `${orig.width}px`;
+                img.style.height = orig.style.height || `${orig.height}px`;
+                img.style.display = 'block';
+                orig.style.display = 'none'; // hide the canvas
+                orig.parentNode?.insertBefore(img, orig);
+                placeholderImgs.push(img);
+            });
+
+            // Minor delay to ensure browser paints the img before screenshot
+            await new Promise(resolve => setTimeout(resolve, 150));
 
             const html2canvas = (await import('html2canvas')).default;
             const canvas = await html2canvas(passRef.current, {
@@ -81,26 +100,15 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                             jgiLogo.style.height = '40px';
                             jgiLogo.style.width = 'auto';
                         }
-
-                        // 4. Fix QR Canvas — replace cloned canvas with an img of the original data
-                        const originalCanvases = passRef.current!.querySelectorAll('canvas');
-                        const clonedCanvases = clonedPass.querySelectorAll('canvas');
-                        originalCanvases.forEach((orig, idx) => {
-                            const cloned = clonedCanvases[idx] as HTMLCanvasElement;
-                            if (cloned && cloned.parentNode) {
-                                const img = clonedDoc.createElement('img');
-                                img.src = orig.toDataURL('image/png');
-                                img.width = orig.width;
-                                img.height = orig.height;
-                                img.style.width = cloned.style.width || `${orig.width}px`;
-                                img.style.height = cloned.style.height || `${orig.height}px`;
-                                img.style.display = 'block';
-                                cloned.parentNode.replaceChild(img, cloned);
-                            }
-                        });
                     }
                 }
             });
+
+            // Restore the canvas
+            originalCanvases.forEach(orig => {
+                orig.style.display = '';
+            });
+            placeholderImgs.forEach(img => img.remove());
 
             const link = document.createElement('a');
             link.download = `Ranatantra-Pass-${user.name.replace(/\s+/g, '_')}.png`;
