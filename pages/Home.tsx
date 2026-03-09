@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, ChevronDown, MapPin, Users, Briefcase } from 'lucide-react';
+import { ArrowRight, Calendar, ChevronDown, MapPin, Users, Briefcase, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import About from '../components/About';
 import CyberpunkTerrain from '../components/CyberpunkTerrain';
@@ -174,7 +174,7 @@ const Home: React.FC = () => {
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div className="p-8 bg-card/50 backdrop-blur-sm border border-white/5 hover:border-primary/50 transition-all duration-500 group hover:-translate-y-2 rounded-xl">
               <Calendar className="w-12 h-12 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(255,0,85,0.8)]" />
               <h3 className="text-fluid-h3 font-bold text-white mb-2 font-mono">2 Days</h3>
@@ -189,6 +189,11 @@ const Home: React.FC = () => {
               <Briefcase className="w-12 h-12 text-tertiary mx-auto mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(255,211,0,0.8)]" />
               <h3 className="text-fluid-h3 font-bold text-white mb-2 font-mono">3+ Events</h3>
               <p className="text-gray-400">Real-world challenges</p>
+            </div>
+            <div className="p-8 bg-card/50 backdrop-blur-sm border border-white/5 hover:border-emerald-500/50 transition-all duration-500 group hover:-translate-y-2 rounded-xl">
+              <Trophy className="w-12 h-12 text-emerald-400 mx-auto mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+              <h3 className="text-fluid-h3 font-bold text-white mb-2 font-mono">Prizes</h3>
+              <p className="text-gray-400">Attractive cash prizes</p>
             </div>
           </div>
         </div>

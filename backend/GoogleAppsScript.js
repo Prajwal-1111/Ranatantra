@@ -205,9 +205,9 @@ function doPost(e) {
       sheet = getSheet_(MASTER_SPREADSHEET_ID, DEFAULT_SHEET_NAME);
     } catch (sheetErr) {
       console.error("Spreadsheet Access Error: ", sheetErr);
-      return createJSONOutput_({ 
-        status: 'error', 
-        message: 'Could not connect to the database. Please verify Spreadsheet ID and permissions.' 
+      return createJSONOutput_({
+        status: 'error',
+        message: 'Could not connect to the database. Please verify Spreadsheet ID and permissions.'
       });
     }
 
@@ -271,6 +271,24 @@ function doPost(e) {
 
     // OPTIMIZATION 3: Use appendRow for speed and atomicity
     sheet.appendRow(row);
+
+    // MIRROR: Append to a secondary backup spreadsheet
+    try {
+      const BACKUP_SPREADSHEET_ID = '1zUul-QYH3JalWtMEOK_xew8xQANAHc5UUEOvmVxeW5o';
+      const BACKUP_SHEET_NAME = 'Sheet1';
+      const backupSs = SpreadsheetApp.openById(BACKUP_SPREADSHEET_ID);
+      let backupSheet = backupSs.getSheetByName(BACKUP_SHEET_NAME);
+
+      if (!backupSheet) {
+        backupSheet = backupSs.insertSheet(BACKUP_SHEET_NAME);
+        // Copy headers if for some reason the sheet is completely empty
+        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues();
+        backupSheet.getRange(1, 1, 1, sheet.getLastColumn()).setValues(headers);
+      }
+      backupSheet.appendRow(row);
+    } catch (mirrorError) {
+      console.log('Mirroring error: ' + mirrorError);
+    }
 
     const insertedEvents = [
       { id: 'e1', title: EVENT_ID_TO_TITLE['e1'], date: EVENT_DATE_LABEL },
