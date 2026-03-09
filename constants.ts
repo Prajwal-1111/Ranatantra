@@ -36,7 +36,7 @@ export const EVENTS: EventDetails[] = [
     image: '/Netrtva tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 10,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   },
   {
@@ -50,7 +50,7 @@ export const EVENTS: EventDetails[] = [
     image: '/Prachara Tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 10,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   },
   {
@@ -64,7 +64,7 @@ export const EVENTS: EventDetails[] = [
     image: '/Kosha tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 10,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   }
 ];

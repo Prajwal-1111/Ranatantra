@@ -1,7 +1,7 @@
 const EVENT_FEES = {
-    e1: 10, e2: 10, e3: 10, e4: 10, e5: 10,
-    e6: 10, e7: 10, e8: 10, e9: 10, e10: 10,
-    e11: 10, e12: 10, e13: 10, e14: 10, e15: 10,
+    e1: 1000, e2: 1000, e3: 1000, e4: 1000, e5: 1000,
+    e6: 1000, e7: 1000, e8: 1000, e9: 1000, e10: 1000,
+    e11: 1000, e12: 1000, e13: 1000, e14: 1000, e15: 1000,
 };
 
 export default async function handler(req, res) {
@@ -26,8 +26,8 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, error: 'No events selected.' });
         }
 
-        // Flat bundle fee — all events included for ₹10
-        const totalFee = 10;
+        // Flat bundle fee — all events included for ₹1000
+        const totalFee = 1000;
         const validEvents = selectedEventIds;
 
         const orderId = 'order_' + Date.now() + Math.random().toString(36).substring(2, 6);
