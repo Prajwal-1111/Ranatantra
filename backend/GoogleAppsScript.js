@@ -195,6 +195,21 @@ function doPost(e) {
     }
 
     const email = normalizeString_(data.email).toLowerCase();
+    if (!email) {
+      return createJSONOutput_({ status: 'error', message: 'Email address is missing in the request.' });
+    }
+
+    // Connect to Spreadsheet
+    let sheet;
+    try {
+      sheet = getSheet_(MASTER_SPREADSHEET_ID, DEFAULT_SHEET_NAME);
+    } catch (sheetErr) {
+      console.error("Spreadsheet Access Error: ", sheetErr);
+      return createJSONOutput_({ 
+        status: 'error', 
+        message: 'Could not connect to the database. Please verify Spreadsheet ID and permissions.' 
+      });
+    }
 
     // OPTIMIZATION 1: Check cache BEFORE opening the spreadsheet (10x faster)
     const existingCache = readUserRegistrationsIndex_(email);
@@ -206,11 +221,9 @@ function doPost(e) {
     }
 
     const selectedEvents = normalizeEvents_(data);
-    if (!email || selectedEvents.length === 0) {
-      return createJSONOutput_({ status: 'error', message: 'Email and at least one event are required.' });
+    if (selectedEvents.length === 0) {
+      return createJSONOutput_({ status: 'error', message: 'At least one event is required.' });
     }
-
-    const sheet = getSheet_(MASTER_SPREADSHEET_ID, DEFAULT_SHEET_NAME);
 
     // OPTIMIZATION 2: Fallback check in sheet only if cache was empty
     const lastRow = sheet.getLastRow();
@@ -226,9 +239,15 @@ function doPost(e) {
     const paymentLink = paymentId ? 'https://merchant.cashfree.com/merchant/pg/orders/' + paymentId : '';
 
     // Handle File Upload to Google Drive (Slow operation)
-    let fileUrl = '';
+    let fileUrl = 'No File';
     if (data.collegeIdFile && data.collegeIdFile.base64) {
-      fileUrl = saveFileToDrive_(data.collegeIdFile, data.registrationId || data.email);
+      try {
+        fileUrl = saveFileToDrive_(data.collegeIdFile, data.registrationId || email);
+      } catch (fileErr) {
+        console.error("File Upload Error: ", fileErr);
+        fileUrl = "Upload Failed: " + fileErr.toString();
+        // We continue anyway even if file upload fails
+      }
     }
 
     const row = [
@@ -260,13 +279,23 @@ function doPost(e) {
     ];
 
     // Update indexes and send email
-    updateUserRegistrationsIndex_(email, insertedEvents);
-    clearRegistrationsCaches_(email);
-    sendConfirmationEmail_(data, insertedEvents, []);
+    try {
+      updateUserRegistrationsIndex_(email, insertedEvents);
+      clearRegistrationsCaches_(email);
+    } catch (cacheErr) {
+      console.warn("Cache metadata update failed, but registration saved: ", cacheErr);
+    }
+
+    try {
+      sendConfirmationEmail_(data, insertedEvents, []);
+    } catch (emailErr) {
+      console.error("Email Sending Error: ", emailErr);
+    }
 
     return createJSONOutput_({ status: 'success', message: 'Registration successful for MBA Fest.' });
   } catch (error) {
-    return createJSONOutput_({ status: 'error', message: error.toString() });
+    console.error("Global Registration Error: ", error);
+    return createJSONOutput_({ status: 'error', message: 'Internal Server Error: ' + error.toString() });
   } finally {
     lock.releaseLock();
   }
