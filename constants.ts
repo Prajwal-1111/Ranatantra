@@ -29,42 +29,42 @@ export const EVENTS: EventDetails[] = [
     id: 'e1',
     title: 'Netrtva Tantra (Best Manager)',
     category: 'Competition',
-    description: 'Prove your leadership and management skills in this ultimate Best Manager competition.',
-    date: 'March 27, 2026',
-    time: '10:00 AM',
+    description: 'Prove your leadership and management skills in this ultimate Best Manager competition. 4 Rounds over 2 Days.',
+    date: 'March 27 - 28, 2026',
+    time: '10:00 AM & 2:00 PM',
     venue: 'Main Auditorium',
-    image: 'https://loremflickr.com/800/600/business,leadership',
+    image: '/Netrtva tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1000,
+    fee: 10,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   },
   {
     id: 'e2',
     title: 'Prachara Tantra (Marketing)',
     category: 'Competition',
-    description: 'Showcase your marketing strategies, brand building, and advertising skills.',
-    date: 'March 27, 2026',
-    time: '01:00 PM',
+    description: 'Showcase your marketing strategies, brand building, and advertising skills. 4 Rounds over 2 Days.',
+    date: 'March 27 - 28, 2026',
+    time: '10:00 AM & 2:00 PM',
     venue: 'Seminar Hall',
-    image: 'https://loremflickr.com/800/600/marketing,advertising',
+    image: '/Prachara Tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1000,
+    fee: 10,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   },
   {
     id: 'e3',
     title: 'Kosh Tantra (Finance)',
     category: 'Competition',
-    description: 'Test your financial acumen, budgeting skills, and investment strategies.',
-    date: 'March 27, 2026',
-    time: '03:00 PM',
+    description: 'Test your financial acumen, budgeting skills, and investment strategies. 4 Rounds over 2 Days.',
+    date: 'March 27 - 28, 2026',
+    time: '10:00 AM & 2:00 PM',
     venue: 'Conference Room',
-    image: 'https://loremflickr.com/800/600/finance,money',
+    image: '/Kosha tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1000,
+    fee: 10,
     rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
   }
 ];
@@ -74,14 +74,21 @@ export const MBA_EVENT_TITLES = EVENTS.map(e => e.title);
 
 export const SCHEDULE = [
   {
-    day: 'MBA Fest Day - March 27',
+    day: 'Day 1 - March 27',
     events: [
       { time: '09:30 AM - 10:00 AM', title: 'Inauguration & Welcome' },
-      { time: '10:00 AM - 12:30 PM', title: 'Netrtva Tantra (Best Manager)' },
-      { time: '12:30 PM - 01:00 PM', title: 'Lunch Break' },
-      { time: '01:00 PM - 03:00 PM', title: 'Prachara Tantra (Marketing)' },
-      { time: '03:00 PM - 05:00 PM', title: 'Kosh Tantra (Finance)' },
-      { time: '05:00 PM - 05:30 PM', title: 'Valedictory & Prize Distribution' },
+      { time: '10:00 AM - 12:00 PM', title: 'Round 1 (All Events)' },
+      { time: '12:00 PM - 02:00 PM', title: 'Lunch Break' },
+      { time: '02:00 PM - 04:00 PM', title: 'Round 2 (All Events)' },
+    ]
+  },
+  {
+    day: 'Day 2 - March 28',
+    events: [
+      { time: '10:00 AM - 12:00 PM', title: 'Round 3 (All Events)' },
+      { time: '12:00 PM - 02:00 PM', title: 'Lunch Break' },
+      { time: '02:00 PM - 04:00 PM', title: 'Round 4 (All Events)' },
+      { time: '04:00 PM - 05:00 PM', title: 'Valedictory & Prize Distribution' },
     ]
   }
 ];

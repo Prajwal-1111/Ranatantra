@@ -55,7 +55,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-white font-semibold text-sm md:text-base">Event Date:</h4>
-                    <p className="text-gray-400 text-xs md:text-sm">March 27, 2026 (09:00 - 18:00)</p>
+                    <p className="text-gray-400 text-xs md:text-sm">March 27 - 28, 2026 (09:00 - 18:00)</p>
                   </div>
                 </div>
               </div>

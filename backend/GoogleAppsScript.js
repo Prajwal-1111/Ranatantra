@@ -12,7 +12,7 @@
  */
 
 const DEFAULT_SHEET_NAME = 'Sheet1';
-const EVENT_DATE_LABEL = 'March 27, 2026';
+const EVENT_DATE_LABEL = 'March 27 - 28, 2026';
 const USER_REGISTRATIONS_CACHE_PREFIX = 'user_registrations:';
 const USER_REGISTRATIONS_CACHE_TTL_SECONDS = 1800;
 const ADMIN_REGISTRATIONS_CACHE_KEY = 'admin_all_registrations';
@@ -40,9 +40,9 @@ const EVENT_ID_TO_TITLE = {
 };
 
 const EVENT_ID_TO_DATE = {
-  e1: 'March 27, 2026',
-  e2: 'March 27, 2026',
-  e3: 'March 27, 2026'
+  e1: 'March 27 - 28, 2026',
+  e2: 'March 27 - 28, 2026',
+  e3: 'March 27 - 28, 2026'
 };
 
 const EVENT_TITLE_TO_ID = {
@@ -767,7 +767,7 @@ function sendConfirmationEmail_(data, eventTitles, skippedEvents) {
       + 'Digital Pass ID: ' + passId + '\n'
       + 'QR Code Link: ' + qrCodeUrl + '\n'
       + '\nVenue: Jain College of Engineering & Technology, Hubballi\n'
-      + 'Date: March 27, 2026\n\n'
+      + 'Date: March 27 - 28, 2026\n\n'
       + 'Bring your college ID card for entry.\n\n'
       + 'See you at the fest!\nRanatantra Team';
 

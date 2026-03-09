@@ -150,7 +150,7 @@ const Events: React.FC = () => {
                   </li>
                   <li className="flex gap-2">
                     <span className="text-secondary mt-0.5">•</span>
-                    Entry fee for the Event is ₹1000 per team.
+                    Entry fee for the Event is ₹10 per team.
                   </li>
                   <li className="flex gap-2">
                     <span className="text-secondary mt-0.5">•</span>

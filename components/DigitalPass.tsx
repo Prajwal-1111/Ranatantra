@@ -230,7 +230,7 @@ const DigitalPass: React.FC<DigitalPassProps> = ({ user, registrations, onClose 
                         <div className="space-y-2 mb-5">
                             <div className="flex items-center gap-2 text-sm text-gray-300">
                                 <Calendar className="w-4 h-4 text-secondary shrink-0" />
-                                <span className="font-semibold">March 27, 2026</span>
+                                <span className="font-semibold">March 27 - 28, 2026</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-300">
                                 <MapPin className="w-4 h-4 text-secondary shrink-0" />

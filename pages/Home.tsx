@@ -71,7 +71,7 @@ const Home: React.FC = () => {
           </div>
 
           <div className="inline-block -mt-12 md:-mt-32 mb-3 md:mb-6 px-4 py-1.5 rounded-full border border-secondary/50 bg-secondary/10 text-secondary text-sm font-bold tracking-widest uppercase shadow-[0_0_15px_rgba(0,255,255,0.3)] backdrop-blur-sm relative z-20">
-            March 27, 2026
+            March 27 - 28, 2026
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 justify-center w-full sm:w-auto px-4 sm:px-0">
@@ -177,7 +177,7 @@ const Home: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="p-8 bg-card/50 backdrop-blur-sm border border-white/5 hover:border-primary/50 transition-all duration-500 group hover:-translate-y-2 rounded-xl">
               <Calendar className="w-12 h-12 text-primary mx-auto mb-4 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(255,0,85,0.8)]" />
-              <h3 className="text-fluid-h3 font-bold text-white mb-2 font-mono">1 Day</h3>
+              <h3 className="text-fluid-h3 font-bold text-white mb-2 font-mono">2 Days</h3>
               <p className="text-gray-400">Non-stop business action</p>
             </div>
             <div className="p-8 bg-card/50 backdrop-blur-sm border border-white/5 hover:border-secondary/50 transition-all duration-500 group hover:-translate-y-2 rounded-xl">
