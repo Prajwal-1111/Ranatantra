@@ -585,7 +585,7 @@ const Register: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <label className={labelClasses}>College ID (PDF/JPG) *</label>
-                            <p className="text-[9px] text-gray-500 mb-1 -mt-1 uppercase tracking-tighter">Merge all 5 member IDs into 1 single PDF file</p>
+                            <p className="text-[9px] text-gray-300 mb-1 -mt-1 uppercase tracking-tighter font-bold">Merge all 5 member IDs into 1 single PDF file</p>
                             <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="w-full text-[10px] text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/20 file:text-primary file:font-bold cursor-pointer" />
                             {collegeIdFile && <p className="text-[10px] text-green-400 font-bold truncate">{collegeIdFile.name}</p>}
                           </div>

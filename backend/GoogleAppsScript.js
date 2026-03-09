@@ -212,13 +212,14 @@ function doPost(e) {
     }
 
     // OPTIMIZATION 1: Check cache BEFORE opening the spreadsheet (10x faster)
-    const existingCache = readUserRegistrationsIndex_(email);
-    if (existingCache && existingCache.length > 0) {
-      return createJSONOutput_({
-        status: 'error',
-        message: 'You are already registered with this email for the MBA Fest.'
-      });
-    }
+    // Disabled during testing so manually deleted rows allow re-registration
+    // const existingCache = readUserRegistrationsIndex_(email);
+    // if (existingCache && existingCache.length > 0) {
+    //   return createJSONOutput_({
+    //     status: 'error',
+    //     message: 'You are already registered with this email for the MBA Fest.'
+    //   });
+    // }
 
     const selectedEvents = normalizeEvents_(data);
     if (selectedEvents.length === 0) {
