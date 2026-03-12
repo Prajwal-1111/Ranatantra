@@ -219,23 +219,23 @@ const Events: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-2">Faculty Coordinators</h4>
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="flex flex-col gap-3">
                         {selectedEvent.coordinators.map((coord, idx) => (
                           <div 
                             key={idx} 
                             className="group/coord p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all duration-300"
                           >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <p className="text-gray-200 text-sm font-bold group-hover/coord:text-white transition-colors">
+                            <div className="flex flex-row items-center gap-3">
+                              <p className="text-gray-200 text-sm font-bold group-hover/coord:text-white transition-colors flex-grow whitespace-nowrap overflow-hidden text-ellipsis">
                                 {coord.name}
                               </p>
                               {coord.phone && (
                                 <a
                                   href={`tel:${coord.phone.replace(/\s+/g, '')}`}
-                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover/coord:bg-emerald-500 group-hover/coord:text-white transition-all duration-300 text-xs font-bold"
+                                  className="shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover/coord:bg-emerald-500 group-hover/coord:text-white transition-all duration-300 text-xs font-bold"
                                 >
                                   <Phone className="w-3.5 h-3.5" />
-                                  <span>{coord.phone}</span>
+                                  <span className="whitespace-nowrap">{coord.phone}</span>
                                 </a>
                               )}
                             </div>
