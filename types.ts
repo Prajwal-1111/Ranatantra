@@ -11,6 +11,7 @@ export interface EventDetails {
   department?: 'CSE' | 'ECE' | 'CVE' | 'ME' | 'BS' | 'General';
   fee?: number; // Fee in INR
   rulebookUrl?: string; // URL path to the PDF rulebook
+  coordinators?: { name: string; phone?: string }[];
 }
 
 export interface RegistrationFormData {

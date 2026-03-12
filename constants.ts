@@ -37,7 +37,13 @@ export const EVENTS: EventDetails[] = [
     teamSize: 'Team of 5',
     department: 'General',
     fee: 1000,
-    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
+    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf',
+    coordinators: [
+      { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
+      { name: 'Prof. Akshata Bilagi', phone: '7760132394' },
+      { name: 'Dr. Ashwinkumar Kumar Chougule', phone: '8123959411' },
+      { name: 'Prof. Sneha M S', phone: '9902361163' }
+    ]
   },
   {
     id: 'e2',
@@ -51,7 +57,13 @@ export const EVENTS: EventDetails[] = [
     teamSize: 'Team of 5',
     department: 'General',
     fee: 1000,
-    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
+    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf',
+    coordinators: [
+      { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
+      { name: 'Prof. Akshata Bilagi', phone: '7760132394' },
+      { name: 'Dr. Ashwinkumar Kumar Chougule', phone: '8123959411' },
+      { name: 'Prof. Sneha M S', phone: '9902361163' }
+    ]
   },
   {
     id: 'e3',
@@ -65,7 +77,13 @@ export const EVENTS: EventDetails[] = [
     teamSize: 'Team of 5',
     department: 'General',
     fee: 1000,
-    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf'
+    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf',
+    coordinators: [
+      { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
+      { name: 'Prof. Akshata Bilagi', phone: '7760132394' },
+      { name: 'Dr. Ashwinkumar Kumar Chougule', phone: '8123959411' },
+      { name: 'Prof. Sneha M S', phone: '9902361163' }
+    ]
   }
 ];
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EVENTS, DEPARTMENTS } from '../constants';
-import { Calendar, MapPin, Users, ArrowUpRight, Download, Info, X, ShieldCheck } from 'lucide-react';
+import { Calendar, MapPin, Users, ArrowUpRight, Download, Info, X, ShieldCheck, Phone } from 'lucide-react';
 import { EventDetails } from '../types';
 
 import { motion } from 'framer-motion';
@@ -75,6 +75,12 @@ const Events: React.FC = () => {
                       <Users className="w-4 h-4 mr-3 text-secondary" />
                       {event.teamSize}
                     </div>
+                    {event.coordinators && event.coordinators.length > 0 && (
+                      <div className="flex items-center text-gray-400 text-sm">
+                        <Users className="w-4 h-4 mr-3 text-emerald-400" />
+                        {event.coordinators.length} Faculty Coordinators
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-2">
@@ -180,10 +186,6 @@ const Events: React.FC = () => {
                     <span className="text-secondary mt-0.5">•</span>
                     Any loss or damage to college property shall result in a penalty and loss of points.
                   </li>
-                  <li className="flex gap-2">
-                    <span className="text-secondary mt-0.5">•</span>
-                    Only participants & team mentors are allowed on the campus.
-                  </li>
                 </ul>
               </div>
 
@@ -200,17 +202,6 @@ const Events: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-primary">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-1">Where</h4>
-                    <p className="text-gray-400 text-sm">{selectedEvent.venue}</p>
-                    <p className="text-gray-500 text-xs">Jain College Hubballi</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
                   <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-tertiary">
                     <Users className="w-6 h-6" />
                   </div>
@@ -220,6 +211,40 @@ const Events: React.FC = () => {
                     <p className="text-gray-500 text-xs">Eligibility: {selectedEvent.department}</p>
                   </div>
                 </div>
+
+                {selectedEvent.coordinators && selectedEvent.coordinators.length > 0 && (
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-white/5 rounded-lg border border-white/10 text-emerald-400">
+                      <Users className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-2">Faculty Coordinators</h4>
+                      <div className="grid grid-cols-1 gap-3">
+                        {selectedEvent.coordinators.map((coord, idx) => (
+                          <div 
+                            key={idx} 
+                            className="group/coord p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all duration-300"
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <p className="text-gray-200 text-sm font-bold group-hover/coord:text-white transition-colors">
+                                {coord.name}
+                              </p>
+                              {coord.phone && (
+                                <a
+                                  href={`tel:${coord.phone.replace(/\s+/g, '')}`}
+                                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover/coord:bg-emerald-500 group-hover/coord:text-white transition-all duration-300 text-xs font-bold"
+                                >
+                                  <Phone className="w-3.5 h-3.5" />
+                                  <span>{coord.phone}</span>
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4">

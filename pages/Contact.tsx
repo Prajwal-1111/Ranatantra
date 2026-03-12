@@ -76,7 +76,7 @@ const Contact: React.FC = () => {
                 </div>
 
                 <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-secondary/50 transition-all">
-                  <h4 className="text-white font-semibold mb-2">Dr. Ashwinkumar Chougule</h4>
+                  <h4 className="text-white font-semibold mb-2">Dr. Ashwinkumar Kumar Chougule</h4>
                   <div className="flex items-center gap-2 text-gray-400">
                     <Phone className="w-4 h-4 text-secondary" />
                     <span className="text-sm">8123959411</span>
@@ -88,6 +88,14 @@ const Contact: React.FC = () => {
                   <div className="flex items-center gap-2 text-gray-400">
                     <Phone className="w-4 h-4 text-tertiary" />
                     <span className="text-sm">99023 61163</span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-primary/50 transition-all">
+                  <h4 className="text-white font-semibold mb-2">Prof. Vishal Ponaji</h4>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Phone className="w-4 h-4 text-primary" />
+                    <span className="text-sm">77953 41351</span>
                   </div>
                 </div>
               </div>
