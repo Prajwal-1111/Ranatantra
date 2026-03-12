@@ -1,5 +1,4 @@
-import React from 'react';
-import { Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Users } from 'lucide-react';
 
 const Contact: React.FC = () => {
   return (
@@ -56,6 +55,39 @@ const Contact: React.FC = () => {
                   <div>
                     <h4 className="text-white font-semibold text-sm md:text-base">Event Date:</h4>
                     <p className="text-gray-400 text-xs md:text-sm">March 27 - 28, 2026 (09:00 - 18:00)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card/40 backdrop-blur-md p-6 md:p-8 rounded-2xl border border-white/5 shadow-xl">
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6 flex items-center gap-2">
+                <Users className="w-6 h-6 text-primary" />
+                Faculty Coordinators
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-primary/50 transition-all">
+                  <h4 className="text-white font-semibold mb-2">Prof. Akshata Bilagi</h4>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Phone className="w-4 h-4 text-primary" />
+                    <span className="text-sm">7760132394</span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-secondary/50 transition-all">
+                  <h4 className="text-white font-semibold mb-2">Dr. Ashwinkumar Chougule</h4>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Phone className="w-4 h-4 text-secondary" />
+                    <span className="text-sm">8123959411</span>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:border-tertiary/50 transition-all">
+                  <h4 className="text-white font-semibold mb-2">Prof. Sneha M S</h4>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Phone className="w-4 h-4 text-tertiary" />
+                    <span className="text-sm">99023 61163</span>
                   </div>
                 </div>
               </div>

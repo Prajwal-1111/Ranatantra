@@ -170,7 +170,7 @@ const Events: React.FC = () => {
                   </li>
                   <li className="flex gap-2">
                     <span className="text-secondary mt-0.5">•</span>
-                    Accommodation provided to outstation participants upon prior request (costs extra).
+                    Accommodation will be provided only for outstation participants upon prior request, and additional charges will be applicable.
                   </li>
                   <li className="flex gap-2">
                     <span className="text-secondary mt-0.5">•</span>

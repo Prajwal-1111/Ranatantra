@@ -1,5 +1,4 @@
-import React from 'react';
-import { Github, Twitter, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
+import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
@@ -29,14 +28,8 @@ const Footer: React.FC = () => {
               Join us for a thrilling college event filled with non-stop fun, excitement, and unforgettable memories! Get ready for games, music, and laughter with friends. Don't miss out on the ultimate campus experience! 🎉🎶🔥
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="p-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center bg-white/5 rounded-full text-gray-400 hover:text-white hover:bg-primary transition-all">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center bg-white/5 rounded-full text-gray-400 hover:text-white hover:bg-secondary transition-all">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center bg-white/5 rounded-full text-gray-400 hover:text-white hover:bg-tertiary transition-all">
-                <Linkedin className="h-5 w-5" />
+              <a href="https://www.instagram.com/jcetmba?igsh=NGppZnAwZnoxcTZj&utm_source=qr" target="_blank" rel="noopener noreferrer" className="p-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center bg-white/5 rounded-full text-gray-400 hover:text-white hover:bg-primary transition-all" title="Follow us on Instagram">
+                <Instagram className="h-5 w-5" />
               </a>
             </div>
           </div>
