@@ -37,7 +37,7 @@ const saveDB = () => {
         console.error("Failed to save DB:", err);
     }
 };
-const EVENT_FEES = { e1: 10, e2: 10, e3: 10 };
+const EVENT_FEES = { e1: 1000, e2: 1000, e3: 1000 };
 app.post('/api/create-order', async (req, res) => {
     try {
         const { selectedEventIds, currency, email, phone, name } = req.body;

@@ -36,7 +36,7 @@ export const EVENTS: EventDetails[] = [
     image: '/Netrtva tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 10,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Netrtva%20Tantra.pdf',
     coordinators: [
       { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
@@ -56,7 +56,7 @@ export const EVENTS: EventDetails[] = [
     image: '/Prachara Tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 10,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Prachara%20Tantra.pdf',
     coordinators: [
       { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
@@ -76,7 +76,7 @@ export const EVENTS: EventDetails[] = [
     image: '/Kosha tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 10,
+    fee: 1000,
     rulebookUrl: '/rulebooks/Kosh%20Tantra%20.pdf',
     coordinators: [
       { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
