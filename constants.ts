@@ -36,8 +36,8 @@ export const EVENTS: EventDetails[] = [
     image: '/Netrtva tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1000,
-    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf',
+    fee: 10,
+    rulebookUrl: '/rulebooks/Netrtva%20Tantra.pdf',
     coordinators: [
       { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
       { name: 'Prof. Akshata Bilagi', phone: '7760132394' },
@@ -56,8 +56,8 @@ export const EVENTS: EventDetails[] = [
     image: '/Prachara Tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1000,
-    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf',
+    fee: 10,
+    rulebookUrl: '/rulebooks/Prachara%20Tantra.pdf',
     coordinators: [
       { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
       { name: 'Prof. Akshata Bilagi', phone: '7760132394' },
@@ -76,8 +76,8 @@ export const EVENTS: EventDetails[] = [
     image: '/Kosha tantra.jpg.jpeg',
     teamSize: 'Team of 5',
     department: 'General',
-    fee: 1000,
-    rulebookUrl: '/rulebooks/Black%20and%20White%20Torn%20Run%20Fest%20Event%20Banner.pdf',
+    fee: 10,
+    rulebookUrl: '/rulebooks/Kosh%20Tantra%20.pdf',
     coordinators: [
       { name: 'Prof. Vishal Ponaji', phone: '77953 41351' },
       { name: 'Prof. Akshata Bilagi', phone: '7760132394' },
