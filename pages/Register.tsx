@@ -322,10 +322,36 @@ const Register: React.FC = () => {
           paymentHandledRef.current = true;
           setMessage('Verifying Payment...');
           try {
+            // Prepare file for server-side submission
+            let preparedFile = fileBase64;
+            if (!preparedFile && collegeIdFile) {
+              preparedFile = await readCollegeIdFile(collegeIdFile);
+              setFileBase64(preparedFile);
+            }
+
+            // Build the registration payload for server-side Google Sheet submission
+            const selectedEvents = [...new Set(formData.selectedEvents || [])].filter(Boolean);
+            const eventsWithIds = selectedEvents.map((eventTitle: string) => {
+              const selectedEvent = EVENTS.find((event) => event.title === eventTitle);
+              return { id: selectedEvent?.id || '', title: eventTitle };
+            });
+
+            const registrationPayload = {
+              ...formData,
+              registrationId: uniqueId,
+              collegeIdFile: preparedFile,
+              selectedEvents: eventsWithIds,
+            };
+
+            // Send order_id + full registration data to verify-payment
+            // Server will verify payment AND submit to Google Sheet
             const verifyRes = await fetch(`${BACKEND_URL}/api/verify-payment`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ order_id: orderData.order_id })
+              body: JSON.stringify({
+                order_id: orderData.order_id,
+                registrationData: registrationPayload
+              })
             });
 
             const verifyData = await verifyRes.json();
@@ -334,10 +360,29 @@ const Register: React.FC = () => {
             }
 
             setLastPaymentId(orderData.order_id);
-            setStatus('success');
-            setRegistrationSyncState('syncing');
-            setMessage('Payment successful. Your registration ID is ready below while we finish syncing your team details.');
-            void finalizeGoogleRegistration(orderData.order_id, uniqueId);
+
+            // Check if sheet submission was successful via server
+            if (verifyData.sheetResult?.status === 'success') {
+              setStatus('success');
+              setRegistrationSyncState('completed');
+              setMessage('Payment successful and registration confirmed! Your digital pass will be available shortly.');
+              setFormData(prev => ({
+                ...prev,
+                phone: '', college: '', department: '', year: '1',
+                selectedEvents: [...MBA_EVENT_TITLES],
+                teamName: '', member1Name: '', member2Name: '', member3Name: '', member4Name: '',
+                accommodationRequired: 'no', agreeToRules: false,
+              }));
+              setCollegeIdFile(null);
+              setFileBase64(null);
+              void fetchRegisteredEvents(formData.email, true);
+            } else {
+              // Server-side sheet submission failed or was skipped, try client-side fallback
+              setStatus('success');
+              setRegistrationSyncState('syncing');
+              setMessage('Payment successful. Syncing your registration details...');
+              void finalizeGoogleRegistration(orderData.order_id, uniqueId);
+            }
           } catch (err: any) {
             setStatus('error');
             setMessage(err.message || 'Payment verification failed.');

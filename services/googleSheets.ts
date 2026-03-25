@@ -173,21 +173,9 @@ const postRegistrationForEvent = async (data: RegistrationFormData, eventTitle: 
     }
 
     return normalized;
-  } catch (fetchError) {
-    // If CORS blocks response reading but data was sent, try no-cors as fallback.
-    console.warn("Retrying registration with no-cors mode...", fetchError);
-
-    try {
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify(payload),
-      });
-      // no-cors means we cannot read the response body.
-      return { status: 'success', message: `Registration submitted for "${eventTitle}".` };
-    } catch (noCorsError: any) {
-      return { status: 'error', message: `${eventTitle}: ${noCorsError?.message || 'Failed to submit registration.'}` };
-    }
+  } catch (fetchError: any) {
+    console.error("Single event registration fetch error:", fetchError);
+    return { status: 'error', message: `${eventTitle}: ${fetchError?.message || 'Failed to submit registration.'}` };
   }
 };
 
@@ -245,20 +233,9 @@ export const submitRegistration = async (data: RegistrationFormData): Promise<Ap
         invalidateRegistrationsCache(data.email);
       }
       return normalized;
-    } catch (fetchError) {
-      // CORS fallback: retry with no-cors
-      console.warn("Retrying batch registration with no-cors mode...", fetchError);
-      try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: JSON.stringify(payload),
-        });
-        invalidateRegistrationsCache(data.email);
-        return { status: 'success', message: `Registration submitted for ${selectedEvents.length} event(s).` };
-      } catch (noCorsError: any) {
-        return { status: 'error', message: noCorsError?.message || 'Failed to submit registration.' };
-      }
+    } catch (fetchError: any) {
+      console.error("Registration submission fetch error:", fetchError);
+      return { status: 'error', message: fetchError?.message || 'Failed to submit registration to sheet. The server-side submission should handle this.' };
     }
   } catch (error: any) {
     console.error("Submission error:", error);
